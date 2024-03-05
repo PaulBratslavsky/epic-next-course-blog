@@ -1,26 +1,26 @@
-# Epic Next JS 14 Tutorial: Learn Next JS by building a real-life project. Part 1: Building Out The Home Page
+# Epic Next JS 14 Tutorial: Learn Next JS by building a real-life project. Part 2: Building Out The Home Page
 
-In this post, we will start by building our home page. We will focus on the **Hero Component** and **Features Component** and use **Dynamic Zone** to allow our Strapi admins to choose which component they would like to use.
+In this post, we will start by building our home page. We will focus on the **Hero Component** and **Features Component** and use **Dynamic Zone** to allow our Strapi admins to choose which component they want to use.
 
 ![001-home-image](./images/01-home-page.gif)
 
 If you missed the first part of this series, you can check it out [here](https://strapi.io/blog/epic-next-js-14-tutorial-learn-next-js-by-building-a-real-life-project-part-1-2).
 
-Once we have our data being returned by our Strapi API we will move on to building out those same components within our Next JS app.
+Once our data is returned by our Strapi API, we will build out those same components within our Next JS app.
 
-Our goal, is to have both our Hero Section and Features Sections to display on our Next application. So let's get started.
+Our goal is to display our Hero Section and Features Sections on our Next application. So let's get started.
 
 ## Structuring Our Data In Strapi
 
-In Strapi there are many ways of structuring your data, you can create `single types`, `collection-types`, as well as `components` that allow you to create reusable content types that you can use in multiple places.
+In Strapi, there are many ways of structuring your data; you can create `single types,` `collection types,` and `components` that allow you to create reusable content types that you can use in multiple places.
 
-For our Hero Section and Features Section we will build them as components.
+We will build our Hero Section and Features Section as components.
 
 Let's start by building out our Hero Section Component.
 
 ### Building The Hero Section Component
 
-Looking at our Hero Section UI we can break it down into following parts.
+Looking at our Hero Section UI, we can break it down into the following parts.
 
 ![02-hero-section](./images/02-hero-section.png)
 
@@ -31,7 +31,7 @@ We have the following items:
 - Subheading
 - Link
 
-So let's jump into our Strapi Admin and create our Hero Component.
+So, let's jump into our Strapi Admin and create our Hero Component.
 
 Let's start by navigating to `Content-Type Builder` under `COMPONENTS` and clicking on `Create new component.`
 
@@ -43,11 +43,11 @@ Media -> Single Media - image
 Text -> Short Text - heading
 Text -> Long Text - subHeading
 
-note: for media in advanced setting change to only allow images.
+Note: Change it to only allow images for media in advanced settings.
 
 ![04-create-hero-section](./images/04-create-hero-section.gif)
 
-For our link we will create a component that we can reuse.
+For our link, we will create a component that we can reuse.
 
 Go ahead and create a new component called **Link** and save it under **components**.
 
@@ -58,17 +58,17 @@ Text -> Short Text -> url
 Text -> Short Text -> text
 Boolean -> isExternal
 
-note: for isExternal in advanced setting change default value to be set to false.
+Note: for isExternal in the advanced setting, change the default value to be set to false.
 
 Let's go ahead and add them now.
 
 ![06-adding-link-fields](./images/06-adding-link-fields.gif)
 
-Finally let's go back to our **Hero Section** component and add our newly created **Link** component.
+Finally, please return to our **Hero Section** component and add our newly created **Link** component.
 
 ![07-adding-link-component](./images/07-adding-link-component.gif)
 
-The following completed fields in our **Hero Section** component should look like the following.
+The completed fields in our **Hero Section** component should look like the following:
 
 ![08-hero-section-fields](./images/08-hero-section-fields.png)
 
@@ -76,15 +76,15 @@ Finally, let's add our newly created component to our **Home Page** via dynamic 
 
 ![09-add-hero-to-home-page](./images/09-add-hero-to-home-page.gif)
 
-We can accomplish this by going to `Content-Type Builder` selecting the **Home Page** under `SINGLE TYPES` and clicking on `Add another field to this single type`.
+We can accomplish this by going to `Content-Type Builder,` selecting the **Home Page** under `SINGLE TYPES` and clicking on `Add another field to this single type.`
 
-The select the `Dynamic Zone` field, give it a name called `blocks` and click on `Add components to the zone`.
+Select the `Dynamic Zone` field, give it a name called `blocks,` and click `Add components to the zone.`
 
-Finally select `Use an existing component` and select our **Hero Section** component.
+Finally, select `Use an existing component` and choose our **Hero Section** component.
 
-Great we now have our first component that has been added to our **Home Page**
+Great, we now have our first component that has been added to our **Home Page**
 
-Before creating our **Features Section** component let's see if we can get our current component from our API.
+Before creating our **Features Section** component, let's see if we can get our current component from our API.
 
 ### Fetching The Hero Section Component Data
 
@@ -96,17 +96,17 @@ Now make sure that we have proper permission in the **Settings**
 
 ![11-permissions](./images/11-permissions.png)
 
-Now let's test our API call in **Insomnia**. But before we do, we need to specify strapi all the items that we would like to populate.
+Now, let's test our API call in **Insomnia**. But before we do, we need to specify strapi all the items we would like to populate.
 
-Looking at our content, we need to tell Strapi to populate the following items `blocks`, `image`, and `link`.
+Looking at our content, we need to tell Strapi to populate the following items: `blocks,` `image,` and `link.`
 
 ![12-home-populate](./images/12-home-populate.png)
 
-Remember we can use the [Strapi Query Builder](https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder) to construct our query.
+Remember, we can construct our query using the [Strapi Query Builder](https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder).
 
-We can populate our data with this following query.
+We can populate our data with the following query.
 
-```js
+``` js
 {
   populate: {
     blocks: {
@@ -124,19 +124,19 @@ We can populate our data with this following query.
 
 ```
 
-Using the query builder it will generate the following LHS syntax query.
+Using the query builder, the following LHS syntax query will be generated.
 
 ![13-home-query](./images/13-home-query.png)
 
 `/api/home-page?populate[blocks][populate][image][fields][0]=url&populate[blocks][populate][image][fields][1]=alternativeText&populate[blocks][populate][link][populate]=true`
 
-To learn more about populate and filtering you can read the following [blog post](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering).
+To learn more about populating and filtering, read the following [blog post](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering).
 
 Here is the [complete URL](http://localhost:1337/api/home-page?populate[blocks][populate][image][fields][0]=url&populate[blocks][populate][image][fields][1]=alternativeText&populate[blocks][populate][link][populate]=true)
 
 ![14-insomnia-request](./images/14-insomnia-request.png)
 
-After making a `GET` request in **Insomnia** we will get the following data.
+We will get the following data after making a `GET` request in **Insomnia**.
 
 ```json
 {
@@ -177,7 +177,7 @@ After making a `GET` request in **Insomnia** we will get the following data.
 }
 ```
 
-Now that we know our Strapi API works, let's move in to the frontend of our project fetch our new data and create our **Hero Section** React component.
+Now that we know our Strapi API works, let's move into the frontend of our project, fetch our new data, and create our **Hero Section** React component.
 
 ## Fetching Our Home Page Data In The Frontend
 
