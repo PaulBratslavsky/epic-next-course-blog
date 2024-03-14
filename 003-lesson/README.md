@@ -1,4 +1,4 @@
-# Epic Next JS 14 Tutorial: Learn Next JS by building a real-life project. Part 3: Building Out The Home Page
+# Epic Next JS 14 Tutorial: Learn Next JS by building a real-life project. Part 3: Finishing Up Our Landing Page
 
 In this part 3 of our series, let's finish up building out our home page. We will finish up our **Hero Section** then move to our **Features Section** and finally add our **Top Navigation** and **Footer**.
 
