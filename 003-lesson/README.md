@@ -906,7 +906,7 @@ export default async function RootLayout({
 
 Full code should look like the following.
 
-``` jsx
+```jsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -923,7 +923,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode,
 }>) {
   const globalData = await getGlobalData();
   console.dir(globalData, { depth: null });
@@ -935,9 +935,9 @@ export default async function RootLayout({
 }
 ```
 
-Nice.  Now restart your Next.js application, and in the terminal console we should see the following output.
+Nice. Now restart your Next.js application, and in the terminal console we should see the following output.
 
-``` js
+```js
 {
   id: 1,
   title: 'Global Page',
@@ -979,4 +979,473 @@ Nice.  Now restart your Next.js application, and in the terminal console we shou
 }
 ```
 
-That is amazing.  
+That is amazing.
+
+### Building Our Header In Next.js
+
+Alright, let's build out our **Header** component for our top navigation.
+
+![013-header](./images/013-header.png)
+
+Just as a reminder, our logo has two items. A **logo** and **button** so let's first create our `Logo` component.
+
+Navigate to `src/app/components/custom` and create a file called `Logo.tsx` and add in the following code.
+
+```jsx
+import Link from "next/link";
+
+function MountainIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+    </svg>
+  );
+}
+
+interface LogoProps {
+  text?: string;
+  dark?: boolean;
+}
+
+export function Logo({
+  text = "Logo Text",
+  dark = false,
+}: Readonly<LogoProps>) {
+  return (
+    <Link className="flex items-center gap-2" href="/">
+      <MountainIcon className={"h-6 w-6  text-pink-500"} />
+      <span
+        className={`text-lg font-semibold ${
+          dark ? "text-white" : "text-slate-900"
+        }`}
+      >
+        {text}
+      </span>
+    </Link>
+  );
+}
+```
+
+It is a simle component that expects `text` as prop to display the name of our site and `dark` prop to allow us make the text white on dark backgrounds.
+
+Next, let's create our actual **Header** component. Navigate to `src/app/components/custom` and create a file called `Header.tsx` and add in the following code.
+
+```jsx
+import Link from "next/link";
+import { Logo } from "@/components/custom/Logo";
+import { Button } from "@/components/ui/button";
+
+interface HeaderProps {
+  data: {
+    logoText: {
+      id: number;
+      text: string;
+      url: string;
+    }
+    ctaButton: {
+      id: number;
+      text: string;
+      url: string;
+    };
+  }
+}
+
+export async function Header({ data }: Readonly<HeaderProps>) {
+  const { logoText, ctaButton } = data;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 bg-white shadow-md dark:bg-gray-800">
+      <Logo text={logoText.text}/>
+      <div className="flex items-center gap-4">
+        <Link href={ctaButton.url}><Button>{ctaButton.text}</Button></Link>
+      </div>
+    </div>
+  );
+}
+
+```
+
+The component expects our `header` props that we are already getting from our `getGlobalData` function found in the `layout.tsx` file.
+
+So let's navigate to `src/app/layout.tsx` file and make the following updates.
+
+First let's import our **Header** component.
+
+```jsx
+import { Header } from "@/components/custom/Header";
+```
+
+Next, make the following change in the `return` statement.
+
+```jsx
+return (
+  <html lang="en">
+    <body className={inter.className}>
+      <Header data={globalData.header} /> // add our header and pass in the data
+      <div>{children}</div>
+    </body>
+  </html>
+);
+```
+
+Restart your project and you should now see our awesome top navigation.
+
+![024-top-nav](./images/024-top-nav.png)
+
+### Building Our Footer In Next.js
+
+Now, let's go ahead and build out our footer.
+
+Our footer will display the following items.
+
+![020-footer](./images/020-footer.png)
+
+Navigate to `src/app/components/custom` and create a file called `Footer.tsx` and add in the following code.
+
+```jsx
+import Link from "next/link";
+import { Logo } from "@/components/custom/Logo";
+
+interface SocialLink {
+  id: number;
+  text: string;
+  url: string;
+}
+
+interface FooterProps {
+  data: {
+    logoText: {
+      id: number,
+      text: string,
+      url: string,
+    },
+    text: string,
+    socialLink: SocialLink[],
+  };
+}
+
+function selectSocialIcon(url: string) {
+  if (url.includes("youtube")) return <YoutubeIcon className="h-6 w-6" />;
+  if (url.includes("twitter")) return <TwitterIcon className="h-6 w-6" />;
+  if (url.includes("github")) return <GithubIcon className="h-6 w-6" />;
+  return null;
+}
+
+export function Footer({ data }: Readonly<FooterProps>) {
+  const { logoText, socialLink, text } = data;
+  return (
+    <div className="dark bg-gray-900 text-white py-8">
+      <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
+        <Logo dark text={logoText.text} />
+        <p className="mt-4 md:mt-0 text-sm text-gray-300">{text}</p>
+        <div className="flex items-center space-x-4">
+          {socialLink.map((link) => {
+            return (
+              <Link className="text-white hover:text-gray-300" href={link.url}>
+                {selectSocialIcon(link.url)}
+                <span className="sr-only">Visit us at {link.text}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GithubIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
+    </svg>
+  );
+}
+
+function TwitterIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    </svg>
+  );
+}
+
+function YoutubeIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+      <path d="m10 15 5-3-5-3z" />
+    </svg>
+  );
+}
+```
+
+The code is responsible for rendering our **Footer** data.
+
+**selectSocialIcon(url: string)**: A function that determines which social media icon to display based on the URL provided. It supports YouTube, Twitter, and GitHub, returning the corresponding icon component or null if the URL does not match these platforms.
+
+**note**: when adding social links, I only included twitter, github and youtube. If you have additional link, you will need to add more icons to represent them.
+
+Here is what my response looks like with my social links.
+
+```js
+[
+  { id: 5, url: "www.youtube.com", text: "YouTube", isExternal: true },
+  {
+    id: 6,
+    url: "www.github.com",
+    text: "Github",
+    isExternal: true,
+  },
+  {
+    id: 7,
+    url: "www.twitter.com",
+    text: "Twitter",
+    isExternal: true,
+  },
+];
+```
+
+Now that we have our **Footer** completed, let's add it in our `layout.tsx` file found in the root of our `app` folder.
+
+First let's import our **Footer** component.
+
+```jsx
+import { Footer } from "@/components/custom/Footer";
+```
+
+Next, make the following change in the `return` statement.
+
+```jsx
+return (
+  <html lang="en">
+    <body className={inter.className}>
+      <Header data={globalData.header} />
+      <div>{children}</div>
+      <Footer data={globalData.footer} />
+    </body>
+  </html>
+);
+```
+
+Now, if you restart the Next.js application you should see the following changes.
+
+![025-footer-data](./images/025-footer-data.png)
+
+Yay, we are now getting our data from our Strapi API.
+
+If you don't see the changes, it is probably because Next.js is caching our old data. When we refactored our app and moved our data loading function to our `loaders.ts` file, we did not implement the `{ cache: "no-store" }` flag like we did in the previous article.
+
+## Let's revisit Next.js Data Caching
+
+Next.js caching is a big topic so make sure to read the docs [here](https://nextjs.org/docs/app/building-your-application/caching)
+
+For our purposes. In the current state of our app, Next.js is caching our data.
+
+If we run `yarn build` you will get the following output.
+
+```bash
+ ✓ Generating static pages (5/5)
+ ✓ Collecting build traces
+ ✓ Finalizing page optimization
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    5.2 kB         96.3 kB
+└ ○ /_not-found                          885 B          85.2 kB
++ First Load JS shared by all            84.3 kB
+  ├ chunks/69-3c42ded033075db6.js        29 kB
+  ├ chunks/fd9d1056-c7082c319cc53ced.js  53.4 kB
+  └ other shared chunks (total)          1.86 kB
+
+
+○  (Static)  prerendered as static content
+
+✨  Done in 10.65s.
+
+```
+
+All of our content is statically generated. So to update our app with the changes we would have to rebuild our site.
+
+Two ways we can handle this in `development` while we are working out our app.
+
+We can keep everything as is, and write a script that will remove the `cache` folder found in the `.next` folder in our app.
+
+Or you can manually delete the folder and restart your application.
+
+![026-manual-delete](./images/026-manual-delete.gif)
+
+Or we can opt out from caching. Like I mentioned before, for static pages, in the future we will have a hook that will be fired from our Strapi app and revalidate new content but for now I will show you another way you can opt out from caching.
+
+Outside of the previous method discussed before we can use the `noStore` function. You can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
+
+What is awesome about the `noStore` function is that we can use it in specific places where we would like `opt-out` from caching.
+
+So let's navigate to our `src/data/loaders.ts` file and make the following changes.
+
+First let's import `noStore` function.
+
+```bash
+import { unstable_noStore as noStore } from 'next/cache';
+```
+
+Now let's use it inside the `getGlobalData` that is responsible for our social links.
+
+```ts
+export async function getGlobalData() {
+  noStore();
+  const url = new URL("/api/global", baseUrl);
+
+  url.search = qs.stringify({
+    populate: [
+      "header.logoText",
+      "header.ctaButton",
+      "footer.logoText",
+      "footer.socialLink",
+    ],
+  });
+
+  return await fetchData(url.href);
+}
+```
+
+Now run the `yarn build` command and you will see the following output.
+
+``` bash
+Route (app)                              Size     First Load JS
+┌ λ /                                    5.2 kB         96.3 kB
+└ λ /_not-found                          885 B          85.2 kB
++ First Load JS shared by all            84.3 kB
+  ├ chunks/69-3c42ded033075db6.js        29 kB
+  ├ chunks/fd9d1056-c7082c319cc53ced.js  53.4 kB
+  └ other shared chunks (total)          1.86 kB
+
+
+λ  (Dynamic)  server-rendered on demand using Node.js
+
+✨  Done in 10.48s.
+```
+
+Notice that our `/` route now has `λ` symbol which demonstrates that this is now on demand server-rendered.
+
+If now we reorder our social links in our **Strapi Admin** panel. Our changes will reflect on our Next.js frontend.
+
+![027-no-store](./images/027-no-store.gif)
+
+We are going to take the `noStore` route for now.
+
+When our app is complete, we will change our home page back to `static` but the rest of our app will be `dynamic`.
+
+## How To Create A Not Found Page In Next.js
+
+So our landing page is looking great, but we have a small problem.  We did not yet implement the `login` page, so when we click our link, we get the default not found page.
+
+![028-not-found-old](./images/028-not-found-old.gif)
+
+But why if we wanted to make it prettier, how can we accomplish this.
+
+Well, we can create the `not-found.js` page.  You can learn more about it [here](https://nextjs.org/docs/app/api-reference/file-conventions/not-found) in the Next.js docs.
+
+Navigate to `src/app` and create a file called `not-found.tsx` and add in the following code.
+
+``` jsx
+import Link from "next/link";
+
+export default function NotFoundRoot() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="space-y-4">
+        <BugIcon className="h-24 w-24 text-pink-500 dark:text-pink-400" />
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+          Oops!
+        </h1>
+        <p className="text-lg text-gray-700 dark:text-gray-300">
+          This page has left the building.
+        </p>
+        <Link
+          href="/"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+        >
+          Go back home
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function BugIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m8 2 1.88 1.88" />
+      <path d="M14.12 3.88 16 2" />
+      <path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" />
+      <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
+      <path d="M12 20v-9" />
+      <path d="M6.53 9C4.6 8.8 3 7.1 3 5" />
+      <path d="M6 13H2" />
+      <path d="M3 21c0-2.1 1.7-3.9 3.8-4" />
+      <path d="M20.97 5c0 2.1-1.6 3.8-3.5 4" />
+      <path d="M22 13h-4" />
+      <path d="M17.2 17c2.1.1 3.8 1.9 3.8 4" />
+    </svg>
+  );
+}
+
+```
+
+Now restart your app, and navigate to our `login` page and you will be treated to this nicer page.  I mean, it can be better, but you get the point.
+
+![029-not-found-new](./images/029-not-found-new.gif)
