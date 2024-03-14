@@ -764,3 +764,76 @@ Let's first start by taking a look on how we have represent this data in Strapi.
 
 ### Modeling Our Header and Footer Data in Strapi
 
+To store our data for our **Header** and **Footer** we are going to use a `single type`. 
+
+Navigating to `Content-Type Builder` under `SINGLE TYPE` and clicking on `Create new single type.`
+
+We are going to call it `Global`.  Go ahead and add the following fields.
+
+Text -> Short Text - title
+Text -> Long Text - description
+
+![015-global-content](./images/015-global-content.gif)
+
+Now let's create or **Header** component, it will have two links to start with.  Logo text and a `call to action` button.
+
+![013-header](./images/013-header.png)
+
+In Strapi, inside the global page lets add the following component.
+
+![016-add-heading-component](./images/016-add-heading-component.gif)
+
+- Click on `add another field to this single type`
+- Select `Component` field type
+- `Display Name` will be **Header**
+- Select `Category` will be `layout`
+- Click on `Configure the component` button
+- In the `Name` field we will enter **header**
+- Finally click on the `Add first field to component` button
+
+Now let's create our first header field to store our logo text, since it will be a link, we can reuse a previously created **Link** component.
+
+![017-create-logo-text](./images/017-create-logo-text.gif)
+
+- Select `Component` field type
+- Click on `Use an existing component`
+- Click on `Select component` button
+- Inside the `Select a component` field select **Link** component
+- In the `Name` field we will enter **logoText**
+- Select `Single component` and click `Finish` button
+
+![018-create-link](./images/018-create-link.gif)
+
+- Select `Add another field to this component`
+- Select `Component` field type
+- Click on `Use an existing component`
+- - Click on `Select a component` button
+- In the `Name` field we will enter **ctaButton**
+- Inside the `Select a component` field select **Link** component
+- Select `Single component` and click `Finish` button
+- Select Single component and click Finish button
+
+The final **Header** component should look like the following.
+
+![019-header](./images/019-header.png)
+
+Now that we are getting the hang of modeling content, think about how we can represent our footer.
+
+![020-footer](./images/020-footer.png)
+
+Our footer has the three following items.
+
+- logoText
+- text
+- socialLink
+
+We can create the **Footer** the same way we created our **Header**
+
+Se if you can do it on your own?
+
+Our **Footer** will have the following fields.
+
+![021-footer-fields](./images/021-footer-fields.png)
+
+If you get stuck at any point, you can always ask in the comments or join us at **Strapi Open Office** hours on [Discord](https://discord.com/invite/strapi) 12:30pm CST Monday - Friday.
+
