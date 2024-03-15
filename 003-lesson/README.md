@@ -1,12 +1,12 @@
 # Epic Next JS 14 Tutorial: Learn Next JS by building a real-life project. Part 3: Finishing Up Our Landing Page
 
-In this part 3 of our series, let's finish up building out our home page. We will finish up our **Hero Section** then move to our **Features Section** and finally add our **Top Navigation** and **Footer**.
+In part 3 of our series, let's finish building out our home page. We will finish up our Hero Section, then move to our Features Section, and finally add our Top Navigation and Footer.
 
-Let's start by refactoring our **Hero Section** to use **Next Image** component.
+Let's refactor our **Hero Section** to use the **Next Image** component.
 
-Instead of using it directly. We going to create a new component called **StrapiImage** where we can add few additional quality of live improvements.
+Instead of using it directly, we will create a new component called **StrapiImage** to add a few additional quality live improvements.
 
-Inside `src/app/components` create a new file called `StrapiImage.tsx` and paste in the following code.
+Inside `src/app/components`, create a new file called `StrapiImage.tsx` and paste it into the following code.
 
 ```tsx
 import Image from "next/image";
@@ -43,9 +43,9 @@ export function StrapiImage({
 }
 ```
 
-You will notice that we have a helper function called `getStrapiMedia`, let's first add it in our `src/lib/utils.ts` file and then go over what it does.
+You will notice that we have a helper function called `getStrapiMedia`; first, let's add it to our `src/lib/utils.ts` file and then review what it does.
 
-```ts
+``` ts
 export function getStrapiURL() {
   return process.env.NEXT_PUBLIC_STRAPI_URL ?? "http://localhost:1337";
 }
@@ -59,34 +59,36 @@ export function getStrapiMedia(url: string | null) {
 ```
 
 **getStrapiURL()**:
-This is a function that returns the URL of the Strapi API. We are setting our env name to `NEXT_PUBLIC_` which will be both available in server and client components.
+This function returns the URL of the Strapi API. We are setting our environment name to `NEXT_PUBLIC_`, which will be available in both the server and client components.
 
 **Note:** only set public for none private items when using `NEXT_PUBLIC_`, they will be seen by all. You can learn more in Next.js [docs](https://nextjs.org/docs/app/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser).
 
 **getStrapiMedia()**:
 This function is designed to process media URLs from the Strapi CMS. It accepts a URL as a string or null.
 
-If the input url is null, the function returns null. This could be used in cases where an image or media file is optional.
+If the input url is null, the function returns null, which could be used in cases where an image or media file is optional.
 
-If the input url starts with "data:", it is returned as-is. This condition checks for data URLs, which are URLs that contain actual data (e.g., base64 encoded images) instead of linking to an external resource. This is often used for embedding small images directly in the HTML or CSS to reduce the number of HTTP requests.
+If the input URL starts with "data:", it is returned as-is. This condition checks for data URLs, which are URLs that contain actual data (e.g., base64-encoded images) instead of linking to an external resource. 
 
-If the input url starts with "http" or "//", it is also returned as-is. This covers absolute URLs, meaning the media is hosted outside the Strapi backend (possibly on another domain or CDN).
+This is often used to embed small images directly in HTML or CSS to reduce the number of HTTP requests.
+
+If the input URL starts with "http" or "//", it is also returned as-is. This covers absolute URLs, meaning the media is hosted outside the Strapi backend (possibly on another domain or CDN).
 
 If none of the above conditions are met, the function assumes the url is a relative path to a resource on the Strapi backend.
 
-In essence, these functions help manage and resolve media URLs in a Next.js application that uses Strapi as a headless CMS, making sure that the application can handle both local and external media resources effectively.
+In essence, these functions help manage and resolve media URLs in a Next.js application that uses Strapi as a headless CMS, ensuring that the application can handle local and external media resources effectively.
 
-Now that we have our **StrapiImage** component, let's use it in our Hero Section.
+Now that we have our **StrapiImage** component let's use it in our Hero Section.
 
 Navigate to `src/app/components/custom/HeroSection.tsx` and make the following changes.
 
-Fist import our newly created component.
+First, import our newly created component.
 
 ```jsx
 import { StrapiImage } from "@/components/custom/StrapiImage";
 ```
 
-Second replace the `img` tag with the following.
+Second, replace the `img` tag with the following.
 
 ```jsx
 <StrapiImage
@@ -98,17 +100,15 @@ Second replace the `img` tag with the following.
 />
 ```
 
-Restart the application and... you will see the following error.
+Restart the application, and... you will see the following error.
 
 ![002-image-error](./images/002-image-error.png)
 
-Clicking on the link in the error will take you [here](https://nextjs.org/docs/messages/next-image-unconfigured-host)
+Clicking on the link in the error will take you [here](https://nextjs.org/docs/messages/next-image-unconfigured-host), which explains the steps to fix this.
 
-Which will explain the steps we need to take to fix this.
+Inside the root of your project, locate the `next.config.mjs` file and make the following change.
 
-Inside the root of you project locate `next.config.mjs` file and make the following change.
-
-```mjs
+``` js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -130,9 +130,9 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-Since we have a fall back URL inside our image, we are referencing it here as well.
+Since we have a fall back URL inside our image, we are also referencing it here.
 
-Now when you restart your application, you should see the following.
+Now, when you restart your application, you should see the following.
 
 ![003-image-fix](./images/003-image-fix.png)
 
@@ -154,7 +154,7 @@ We have a section that has repeatable components with the following items.
 
 So, let's jump into our Strapi Admin and create our **Features Section** Component.
 
-Let's start by navigating to `Content-Type Builder` under `COMPONENTS`, clicking on `Create new component` and let's call it **Features Section** and save it under `layout` category.
+Let's start by navigating to `Content-Type Builder` under `COMPONENTS`, clicking on `Create new component`, and let's call it **Features Section** and save it under the `layout` category.
 
 ![005-create-features-section](./images/005-create-features-section.gif)
 
@@ -165,11 +165,11 @@ Text -> Long Text - description
 
 ![006-create-features-fields](./images/006-create-features-fields.gif)
 
-Finally let's create a repeatable component called **Feature** and save it under **components**
+Finally, let's create a repeatable component called **Feature** and save it under **components**
 
 ![007-create-features-component](./images/007-create-features-component.gif)
 
-And now and add the following fields
+Now, add the following fields.
 
 Text -> Short Text - heading
 Text -> Long Text - subHeading
@@ -181,17 +181,17 @@ Enum -> with the following options
 
 ![008-create-features-component-field](./images/008-create-features-component-field.gif)
 
-Now, let's add our newly created **Feature Section** component to our home page.
+Let's add our newly created **Feature Section** component to our home page.
 
 ![009-add-features-to-page](./images/009-add-features-to-page.gif)
 
 Now, let's add some features data and save.
 
-Navigate to **Content Manager** select the **Home Page** add the new **Features Section** block and fill in your features.
+Navigate to **Content Manager**, select the **Home Page**, add the new **Features Section** block, and fill in your features.
 
 ![010-adding-data](./images/010-adding-data.gif)
 
-We are already getting our page data, let's navigate to `src/app/page.tsx` and update our query to populate our `feature` repeatable component.
+We are already getting our page data; let's navigate to `src/app/page.tsx` and update our query to populate our `feature` repeatable component.
 
 ![011-populate-feature](./images/011-populate-feature.png)
 
@@ -217,7 +217,7 @@ const homePageQuery = qs.stringify({
 });
 ```
 
-Also, let's update our `getStrapiData` function to use our new helper method `getStrapiURL`. So it will look like the following.
+Also, let's update our `getStrapiData` function to use our new helper method, `getStrapiURL.` So it will look like the following.
 
 ```jsx
 async function getStrapiData(path: string) {
@@ -237,7 +237,7 @@ async function getStrapiData(path: string) {
 }
 ```
 
-Now let's console log our `block` and see what the response looks like.
+Now, let's console log our `block` and see what the response looks like.
 
 ```jsx
 console.dir(blocks, { depth: null });
@@ -292,11 +292,11 @@ We should see the following data.
 
 Notice that we are getting both our **Hero Section** and **Features Section**
 
-Now let's create a component to display our features data.
+Now, let's create a component to display our feature data.
 
 ### Building Our Features Section Data In Next.js
 
-Let's navigate to `src/app/components/custom` and create a file called `FeaturesSection.tsx` and paste in the following code.
+Let's navigate to `src/app/components/custom`, create a file called `FeaturesSection.tsx,` and paste it into the following code.
 
 ```jsx
 function getIcon(name: string) {
@@ -406,7 +406,7 @@ function CloudIcon(props: any) {
 }
 ```
 
-Currently we are hard coding our data which we will update in a moment. But let's navigate to `src/app/page.tsx` and import our newly created component and see what we get.
+We are currently hard-coding our data, which we will update in a moment. But let's navigate to `src/app/page.tsx`, import our newly created component, and see what we get.
 
 ```jsx
 import { FeatureSection } from "@/components/custom/FeaturesSection";
@@ -423,7 +423,7 @@ return (
 );
 ```
 
-When we restart our application we should see the following.
+When we restart our application, we should see the following.
 
 ![012-features-view](./images/012-features-view.png)
 
@@ -563,9 +563,9 @@ function CloudIcon(props: any) {
 
 Our features component should now be utilizing our Strapi data.
 
-We do have to make one more change in the `page.tsx` file make our code to dynamically display our **blocks** based on what we are getting from our response.
+We do have to make one more change in the `page.tsx` file to make our code dynamically display our blocks based on what we get from our response.
 
-To accomplish this, we will create a new function called `blockRenderer`. We will defined it here in the `page.tsx` file.
+To accomplish this, we will create a new function called `blockRenderer` and define it in the `page.tsx` file.
 
 ```jsx
 function blockRenderer(block: any) {
@@ -580,7 +580,7 @@ function blockRenderer(block: any) {
 }
 ```
 
-Now we can refactor the code in our `Home` component with the following code.
+We can refactor the code in our `Home` component with the following code.
 
 ```jsx
 export default async function Home() {
@@ -657,11 +657,11 @@ export default async function Home() {
 }
 ```
 
-Let's do one more quick refactor. In `src` create a new folder named `data` with a file called `loaders.tsx`.
+Let's do one more quick refactor. In `src`, create a new folder named `data` with a file called `loaders.tsx`.
 
 And add the following code.
 
-```ts
+``` ts
 import qs from "qs";
 import { flattenAttributes, getStrapiURL } from "@/lib/utils";
 
@@ -690,7 +690,7 @@ async function fetchData(url: string) {
 
 We will create a reusable function that will help us construct additional methods to load data.
 
-And finally, let's create a new function `getHomePageData` to load our home page data.
+And finally, let's create a new function, `getHomePageData,` to load our home page data.
 
 ```jsx
 export async function getHomePageData() {
@@ -718,7 +718,7 @@ export async function getHomePageData() {
 }
 ```
 
-And finally in the `pate.tsx` file let's import this new function and delete the previous one.
+And finally, in the `pate.tsx` file, let's import this new function and delete the previous one.
 
 Our final code should look like the following.
 
@@ -756,15 +756,15 @@ Nice. Let's move on and start working on our **Header** and **Footer**
 ![013-header](./images/013-header.png)
 ![013-footer](./images/014-footer.png)
 
-Taking a quick look at our **Header** and **Footer** we see that they are not too complex. In the header we have two items, `logo text` and `button`.
+Taking a quick look at our **Header** and **Footer**, we see that they are simple enough. In the header, we have two items, `logo text` and `button.`
 
-And in the footer, we have `logo text`, `text` and `social icons`.
+In the footer, we have `logo text,` `text,` and `social icons.`
 
-Let's first start by taking a look on how we have represent this data in Strapi.
+Let's first start by taking a look at how we have represented this data in Strapi.
 
 ### Modeling Our Header and Footer Data in Strapi
 
-To store our data for our **Header** and **Footer** we are going to use a `single type`.
+We are going to store the data for our' Header' and' Footer' using a single type.'
 
 Navigating to `Content-Type Builder` under `SINGLE TYPE` and clicking on `Create new single type.`
 
@@ -775,83 +775,83 @@ Text -> Long Text - description
 
 ![015-global-content](./images/015-global-content.gif)
 
-Now let's create or **Header** component, it will have two links to start with. Logo text and a `call to action` button.
+Now, let's create the **Header** component. To start with, it will have two links: logo text and a `call to action` button.
 
 ![013-header](./images/013-header.png)
 
-In Strapi, inside the global page lets add the following component.
+In Strapi, inside the global page, let's add the following component.
 
 ![016-add-heading-component](./images/016-add-heading-component.gif)
 
-- Click on `add another field to this single type`
-- Select `Component` field type
+- Click on `add another field to this single type.`
+- Select the `Component` field type
 - `Display Name` will be **Header**
-- Select `Category` will be `layout`
+- Select `Category` will be `Layout`
 - Click on `Configure the component` button
-- In the `Name` field we will enter **header**
-- Finally click on the `Add first field to component` button
+- In the `Name` field, we will enter **header**
+- Finally, click on the `Add the first field to component` button
 
-Now let's create our first header field to store our logo text, since it will be a link, we can reuse a previously created **Link** component.
+Now, let's create our first header field to store our logo text. Since it will be a link, we can reuse a previously created **Link** component.
 
 ![017-create-logo-text](./images/017-create-logo-text.gif)
 
-- Select `Component` field type
+- Select the `Component` field type
 - Click on `Use an existing component`
-- Click on `Select component` button
-- Inside the `Select a component` field select **Link** component
-- In the `Name` field we will enter **logoText**
-- Select `Single component` and click `Finish` button
+- Click on the `Select component` button
+- Inside the `Select a component` field, select **Link** component
+- In the `Name` field, we will enter **logo text**
+- Select `Single component` and click the `Finish` button
 
 ![018-create-link](./images/018-create-link.gif)
 
 - Select `Add another field to this component`
-- Select `Component` field type
+- Select the `Component` field type
 - Click on `Use an existing component`
-- - Click on `Select a component` button
-- In the `Name` field we will enter **ctaButton**
-- Inside the `Select a component` field select **Link** component
-- Select `Single component` and click `Finish` button
-- Select Single component and click Finish button
+- - Click on the `Select a component` button
+- In the `Name` field, we will enter **ctaButton**
+- Inside the `Select a component` field, select **Link** component
+- Select `Single component` and click the `Finish` button
+- Select Single component and click the Finish button
 
 The final **Header** component should look like the following.
 
 ![019-header](./images/019-header.png)
 
-Now that we are getting the hang of modeling content, think about how we can represent our footer.
+Now that we are getting the hang of modeling content think about how we can represent our footer.
 
 ![020-footer](./images/020-footer.png)
 
-Our footer has the three following items.
+Our footer has the following three items.
 
 - logoText
 - text
 - socialLink
 
-We can create the **Footer** the same way we created our **Header**
+We can create the **Footer** the same way we made our **Header**.
 
-Se if you can do it on your own?
+Can you do it on your own?
 
 Our **Footer** will have the following fields.
 
 ![021-footer-fields](./images/021-footer-fields.png)
 
-If you get stuck at any point, you can always ask in the comments or join us at **Strapi Open Office** hours on [Discord](https://discord.com/invite/strapi) 12:30pm CST Monday - Friday.
+If you get stuck at any point, you can always ask in the comments or join us at **Strapi Open Office** hours on [Discord](https://discord.com/invite/strapi) 12:30 pm CST Monday - Friday.
 
-Let's add some data to our **Global** single-type.
+Let's add some data to our **Global** single type.
 
 ![022-add-global-content](./images/022-add-global-content.gif)
 
-Now let's give the proper permissions so we can access the data from our Strapi API.
+Now, let's give the proper permissions so we can access the data from our Strapi API.
 
-Navigating to `Setting` -> `USERS AND PERMISSION PLUGIN` -> `Roles` -> `Public` -> `Global` and check the `find` checkbox. We now should be able to make a `GET` request to `/api/global` and see our data.
+Navigate to `Setting` -> `USERS AND PERMISSION PLUGIN` -> `Roles` -> `Public` -> `Global` and check the `find` checkbox. We now should be able to make a `GET` request to `/api/global` and see our data.
 
 ![023-permissions](./images/023-permissions.png)
 
-Since we already learned about Strapi's **Populate** we can jump straight into our frontend code and implement the function to fetch our **Global** data.
+Since we have already learned about Strapi's **Populate**, we can jump straight into our frontend code and implement the function to fetch our **Global** data.
 
 ### Fetching Our Global Header and Footer Data
 
-Let's navigate to `src/data/loaders.ts` and create a new function called `getGlobalData`, it should look like the following.
+Let's navigate to `src/data/loaders.ts` and create a new function called `getGlobalData`; it should look like the following.
 
 ```jsx
 export async function getGlobalData() {
@@ -870,23 +870,23 @@ export async function getGlobalData() {
 }
 ```
 
-One thing to notice here, is that we are using `array` notation in populate, which is a great way to populate items that don't have many nested items.
+One thing to notice here is that we are using `array` notation in populate, which is a great way to populate items that don't have many nested items.
 
-If you need more help around **Populate** and **Filtering** in Strapi checkout this [post](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering).
+If you need more help with **Populate** and **Filtering** in Strapi, check out this [post](https://strapi.io/blog/demystifying-strapi-s-populate-and-filtering).
 
-Now that we have our `getGlobalData` function, let's go and use it.
+Now that we have our `getGlobalData` function let's use it.
 
 Since our **Header** and **Footer** will live int the `layout.tsx` file, let's call our function there.
 
-Since we are able to load data right within our **React Server Component** we can just call the function there directly.
+Since we can load data within our **React Server Component**, we can call the function there directly.
 
-Fist let's import our function.
+First, let's import our function.
 
 ```jsx
 import { getGlobalData } from "@/data/loaders";
 ```
 
-Then update the **RootLayout** with the following code.
+Then, update the **RootLayout** with the following code.
 
 ```jsx
 export default async function RootLayout({
@@ -904,7 +904,7 @@ export default async function RootLayout({
 }
 ```
 
-Full code should look like the following.
+The complete code should look like the following.
 
 ```jsx
 import type { Metadata } from "next";
@@ -935,9 +935,9 @@ export default async function RootLayout({
 }
 ```
 
-Nice. Now restart your Next.js application, and in the terminal console we should see the following output.
+Nice. Now restart your Next.js application, and we should see the following output in the terminal console.
 
-```js
+``` js
 {
   id: 1,
   title: 'Global Page',
@@ -987,9 +987,9 @@ Alright, let's build out our **Header** component for our top navigation.
 
 ![013-header](./images/013-header.png)
 
-Just as a reminder, our logo has two items. A **logo** and **button** so let's first create our `Logo` component.
+Just as a reminder, our logo has two items. A **logo** and **button** , so let's first create our `Logo` component.
 
-Navigate to `src/app/components/custom` and create a file called `Logo.tsx` and add in the following code.
+Navigate to `src/app/components/custom`, create a file called `Logo.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1037,9 +1037,9 @@ export function Logo({
 }
 ```
 
-It is a simle component that expects `text` as prop to display the name of our site and `dark` prop to allow us make the text white on dark backgrounds.
+It is a simple component that expects `text` as a prop to display the name of our site and a `dark` prop to allow us to make the text white on dark backgrounds.
 
-Next, let's create our actual **Header** component. Navigate to `src/app/components/custom` and create a file called `Header.tsx` and add in the following code.
+Next, let's create our actual **Header** component. Navigate to `src/app/components/custom`, create a file called `Header.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1075,11 +1075,11 @@ export async function Header({ data }: Readonly<HeaderProps>) {
 
 ```
 
-The component expects our `header` props that we are already getting from our `getGlobalData` function found in the `layout.tsx` file.
+The component expects our `header` props, which we already get from our `getGlobalData` function found in the `layout.tsx` file.
 
 So let's navigate to `src/app/layout.tsx` file and make the following updates.
 
-First let's import our **Header** component.
+First, let's import our **Header** component.
 
 ```jsx
 import { Header } from "@/components/custom/Header";
@@ -1098,7 +1098,7 @@ return (
 );
 ```
 
-Restart your project and you should now see our awesome top navigation.
+Restart your project, and you should now see our awesome top navigation.
 
 ![024-top-nav](./images/024-top-nav.png)
 
@@ -1110,7 +1110,7 @@ Our footer will display the following items.
 
 ![020-footer](./images/020-footer.png)
 
-Navigate to `src/app/components/custom` and create a file called `Footer.tsx` and add in the following code.
+Navigate to `src/app/components/custom,` create a file called `Footer.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1227,11 +1227,11 @@ The code is responsible for rendering our **Footer** data.
 
 **selectSocialIcon(url: string)**: A function that determines which social media icon to display based on the URL provided. It supports YouTube, Twitter, and GitHub, returning the corresponding icon component or null if the URL does not match these platforms.
 
-**note**: when adding social links, I only included twitter, github and youtube. If you have additional link, you will need to add more icons to represent them.
+**note**: When adding social links, I only included Twitter, Github, and YouTube. If you have additional links, you will need to add more icons to represent them.
 
 Here is what my response looks like with my social links.
 
-```js
+``` js
 [
   { id: 5, url: "www.youtube.com", text: "YouTube", isExternal: true },
   {
@@ -1249,9 +1249,9 @@ Here is what my response looks like with my social links.
 ];
 ```
 
-Now that we have our **Footer** completed, let's add it in our `layout.tsx` file found in the root of our `app` folder.
+Now that we have completed our footer, let's add it to the layout.tsx file in the root of our app folder.
 
-First let's import our **Footer** component.
+First, let's import our **Footer** component.
 
 ```jsx
 import { Footer } from "@/components/custom/Footer";
@@ -1271,21 +1271,21 @@ return (
 );
 ```
 
-Now, if you restart the Next.js application you should see the following changes.
+Now, if you restart the Next.js application, you should see the following changes.
 
 ![025-footer-data](./images/025-footer-data.png)
 
 Yay, we are now getting our data from our Strapi API.
 
-If you don't see the changes, it is probably because Next.js is caching our old data. When we refactored our app and moved our data loading function to our `loaders.ts` file, we did not implement the `{ cache: "no-store" }` flag like we did in the previous article.
+If you don't see the changes, it is because Next.js is caching our old data. When we refactored our app and moved our data loading function to our `loaders.ts` file, we did not implement the `{ cache: "no-store" }` flag as we did in the previous article.
 
 ## Let's revisit Next.js Data Caching
 
-Next.js caching is a big topic so make sure to read the docs [here](https://nextjs.org/docs/app/building-your-application/caching)
+Next.js caching is a big topic, so make sure to read the docs [here](https://nextjs.org/docs/app/building-your-application/caching)
 
-For our purposes. In the current state of our app, Next.js is caching our data.
+In the current state of our app, Next.js is caching our data.
 
-If we run `yarn build` you will get the following output.
+You will get the following output if we run `yarn build`.
 
 ```bash
  ✓ Generating static pages (5/5)
@@ -1307,33 +1307,33 @@ Route (app)                              Size     First Load JS
 
 ```
 
-All of our content is statically generated. So to update our app with the changes we would have to rebuild our site.
+Our content is statically generated, so to update our app with the changes, we would have to rebuild our site.
 
-Two ways we can handle this in `development` while we are working out our app.
+There are two ways we can handle this in `development` while we are working out our app.
 
-We can keep everything as is, and write a script that will remove the `cache` folder found in the `.next` folder in our app.
+We can keep everything as is and write a script that will remove the `cache` folder found in the `.next` folder in our app.
 
-Or you can manually delete the folder and restart your application.
+You can also manually delete the folder and restart your application.
 
 ![026-manual-delete](./images/026-manual-delete.gif)
 
-Or we can opt out from caching. Like I mentioned before, for static pages, in the future we will have a hook that will be fired from our Strapi app and revalidate new content but for now I will show you another way you can opt out from caching.
+Or we can opt out of caching. As I mentioned before, for static pages, in the future, we will have a hook that will be fired from our Strapi app and revalidate new content, but for now, I will show you another way you can opt out of caching.
 
-Outside of the previous method discussed before we can use the `noStore` function. You can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
+Outside of the previous method discussed, we can use the `noStore` function; you can read more about it [here](https://nextjs.org/docs/app/api-reference/functions/unstable_noStore).
 
-What is awesome about the `noStore` function is that we can use it in specific places where we would like `opt-out` from caching.
+What is fantastic about the `noStore` function is that we can use it in specific places where we would like to opt out of caching.
 
-So let's navigate to our `src/data/loaders.ts` file and make the following changes.
+So, let's navigate to our `src/data/loaders.ts` file and make the following changes.
 
-First let's import `noStore` function.
+First, let's import the `noStore` function.
 
 ```bash
 import { unstable_noStore as noStore } from 'next/cache';
 ```
 
-Now let's use it inside the `getGlobalData` that is responsible for our social links.
+Now, let's use it inside the `getGlobalData` that is responsible for our social links.
 
-```ts
+``` ts
 export async function getGlobalData() {
   noStore();
   const url = new URL("/api/global", baseUrl);
@@ -1351,7 +1351,7 @@ export async function getGlobalData() {
 }
 ```
 
-Now run the `yarn build` command and you will see the following output.
+Now run the `yarn build` command, and you will see the following output.
 
 ```bash
 Route (app)                              Size     First Load JS
@@ -1368,19 +1368,19 @@ Route (app)                              Size     First Load JS
 ✨  Done in 10.48s.
 ```
 
-Notice that our `/` route now has `λ` symbol which demonstrates that this is now on demand server-rendered.
+Notice that our `/` route now has the `λ` symbol, which demonstrates that it is now server-rendered on demand.
 
-If now we reorder our social links in our **Strapi Admin** panel. Our changes will reflect on our Next.js frontend.
+If we reorder our social links in our **Strapi Admin** panel now, our changes will reflect on our Next.js frontend.
 
 ![027-no-store](./images/027-no-store.gif)
 
 We are going to take the `noStore` route for now.
 
-When our app is complete, we will change our home page back to `static` but the rest of our app will be `dynamic`.
+When our app is complete, we will change our home page back to `static`, but the rest of our app will be `dynamic.`
 
 ## How To Populate Our Metadata Dynamically In Next.js
 
-We have a `tittle` and `description` in our **Global** page in Strapi.
+We have a `title` and `description` on our **Global** page in Strapi.
 
 ![033-metadata](./images/033-metadata.png)
 
@@ -1395,13 +1395,13 @@ export const metadata: Metadata = {
 };
 ```
 
-This is one way to set metadata in Next.js, but as you notice, this is hardcoded. Let's take a look at how we can add metadata dynamically.
+This is one way to set metadata in Next.js, but as you notice, it is hardcoded. Let's look at how we can add metadata dynamically.
 
-In order to dynamically populate our metadata we must fetch it inside our `metadata` function.
+To dynamically populate our metadata, we must fetch it using our `metadata` function.
 
-We already have our `getGlobalData` but that function return not just the `title` and `description`, but the rest of our data to populate our **Header** and **Footer**.
+We already have our `getGlobalData`, but that function returns not just the `title` and `description` but also the rest of our data to populate our **Header** and **Footer**.
 
-Let's create a new function called `getGlobalPageMetadata` which will only return the `title` and `description` fields.
+Let's create a new function called `getGlobalPageMetadata,` which only returns the `title` and `description` fields.
 
 Let's navigate to `src/data/loaders.ts` and add the following code.
 
@@ -1417,11 +1417,11 @@ export async function getGlobalPageMetadata() {
 }
 ```
 
-In the function above, we ask Strapi to return only the `title` and `description`, the only data we need for our metadata.
+In the function above, we ask Strapi to return only the `title` and `description,` which are the only data we need for our metadata.
 
 The response will look like the following.
 
-```js
+``` js
 {
   id: 1,
   title: 'Global Page',
@@ -1435,7 +1435,7 @@ Let's implement dynamic metadata inside our `layout.tsx` file.
 
 Let's update our current `metadata` function with the following.
 
-First let's import the following.
+First, let's import the following.
 
 ```jsx
 import type { Metadata } from "next";
@@ -1502,15 +1502,15 @@ Nice job.
 
 ## How To Create A Not Found Page In Next.js
 
-So our landing page is looking great, but we have a small problem. We did not yet implement the `login` page, so when we click our link, we get the default not found page.
+Our landing page looks great, but we have a small problem. We have not yet implemented the `login` page, so when we click our link, we get the default not found page.
 
 ![028-not-found-old](./images/028-not-found-old.gif)
 
-But why if we wanted to make it prettier, how can we accomplish this.
+But why, if we wanted to make it prettier, how can we accomplish this?
 
 Well, we can create the `not-found.js` page. You can learn more about it [here](https://nextjs.org/docs/app/api-reference/file-conventions/not-found) in the Next.js docs.
 
-Navigate to `src/app` and create a file called `not-found.tsx` and add in the following code.
+Navigate to `src/app,` create a file called `not-found.tsx,` and add the following code.
 
 ```jsx
 import Link from "next/link";
@@ -1567,19 +1567,19 @@ function BugIcon({ className }: { className?: string }) {
 }
 ```
 
-Now restart your app, and navigate to our `login` page and you will be treated to this nicer page. I mean, it can be better, but you get the point.
+Now restart your app and navigate to our `login` page. You will be treated to this nicer page. It can be better, but you get the point.
 
 ![029-not-found-new](./images/029-not-found-new.gif)
 
-Wouldn't be nice if we can show a loaded spinner when navigation pages? Yes it would. Let's see how we can do that.
+Wouldn't it be nice to show a loaded spinner when navigation pages are displayed? Yes, it would. Let's see how we can do that.
 
 ## How To Create A Loading Page In Next.js
 
-There are many ways to handle the loading state in Next.js; we are going to start with the simplest one.
+There are many ways to handle the loading state in Next.js; we will start with the simplest one.
 
-Which is creating a file called `loading.tsx``. You can read about other ways [here](https://nextjs.org/docs/app/api-reference/file-conventions/loading).
+This creates a file called `loading.tsx`. You can read about other ways [here](https://nextjs.org/docs/app/api-reference/file-conventions/loading).
 
-Navigate to `src/app` and create a file called `loading.tsx` and add in the following code.
+Navigate to `src/app`, create a file called `loading.tsx`, and add the following code.
 
 ```jsx
 export default function Loading() {
@@ -1591,7 +1591,7 @@ export default function Loading() {
 }
 ```
 
-That is all we need to do. Now let's restart our application and see the amazing loader in action. Feel free to add your own design flare to your application if yo find my loader to boring.
+That is all we need to do. Now, let's restart our application and see the amazing loader in action. If you find my loader too boring, feel free to add your own design flair to your application.
 
 ![030-loading-page](./images/030-loading-page.gif)
 
@@ -1599,17 +1599,17 @@ Finally, let's take a look at how we can handle errors in our application.
 
 ## How To Handle Errors In Next.js
 
-Now, let's take a look at how we can handle errors in Next.js to prevent our app from crashing completely.
+Now, let's examine how to handle errors in Next.js to prevent our app from crashing completely.
 
-Right now, if I go to the `src/data/loaders.ts` and throw an error inside the `getHomePageData` function by adding the following.
+Right now, if I go to the `src/data/loaders.ts` and add the following, I can throw an error inside the `getHomePageData` function.
 
-```ts
+``` ts
 throw new Error("Test error");
 ```
 
-Complete function will look like the following.
+The complete function will look like the following.
 
-```ts
+``` ts
 export async function getHomePageData() {
   throw new Error("Test error");
 
@@ -1643,7 +1643,7 @@ Our app will break with an ugly error.
 
 Let's see if we can fix this.
 
-We can fix this by creating an `error.ts` file to gracefully break our app. You can read more about Next.js errors [here](https://nextjs.org/docs/app/building-your-application/routing/error-handling)
+We can fix this by creating an `error.ts` file to break our app gracefully. You can read more about Next.js errors [here](https://nextjs.org/docs/app/building-your-application/routing/error-handling)
 
 Let's create a file called `error.tsx` inside our app folder and paste it into the following code.
 
@@ -1711,22 +1711,22 @@ Now, when our app crashes, it does not look as scary.
 
 ![032-pretty-error](./images/032-pretty-error.png)
 
-Nice, we covered a lot in this post. Let's do a quick recap of what we covered.
+Excellent, we covered a lot in this post. Let's do a quick recap of what we covered.
 
 ## Conclusion
 
-n this Part 3 of the Epic Next.js 14 Tutorial series, we focused on completing the home page design of a real-life project. The tutorial covered several key areas:
+In Part 3 of the Epic Next.js 14 Tutorial series, we focused on completing the home page design of a real-life project. The tutorial covered several key areas:
 
 **Refactoring the Hero Section**: we refactored the Hero Section to use the Next.js Image component for optimized image handling. This included creating a custom StrapiImage component for additional quality-of-life improvements.
 
-**Building the Features Section**: This section involved modeling the Features Section data in Strapi, creating corresponding components in Next.js, and implementing functionality to display features dynamically from the Strapi CMS.
+**Building the Features Section**: This Section involved modeling the Features Section data in Strapi, creating corresponding components in Next.js, and implementing functionality to display features dynamically from the Strapi CMS.
 
-**Displaying Dynamic Meta Data**: We took a look at how to get our metadata from Strapi and display in in our `layout.tsx` page.
+**Displaying Dynamic Meta Data**: We examined how to get our metadata from Strapi and display it on our `layout.tsx` page.
 
-**Top Header and Footer**: we created our Header and Footer, leveraging Strapi for managing and fetching global data like logo texts and social links.
+**Top Header and Footer**: We created our Header and Footer, leveraging Strapi to manage and fetch global data like logo texts and social links.
 
-And we finished up by covering how to handle **loading**, **not found** and **errors** pages.
+We finished by covering how to handle **loading**, **not found**, and **errors** pages.
 
-Can't wait to see in the next post where we cover how to create our **Sign In** and **Sign Up** page. Which will include form validation with `zod`, handling form submission with `server actions`, creating and storing `http only` cookie and protection our routes with Next.js `middleware`.
+I can't wait to see the next post, where we cover how to create our **Sign In** and **Sign Up** pages. This will include form validation with `Zod`, handling form submission with `server actions`, creating and storing `http only` cookies, and protecting our routes with Next.js `middleware`.
 
-I am so excited. Thanks for checking out this post. And I will see you in the next one.
+I am so excited. Thanks for checking out this post. I look forward to seeing you in the next one.
