@@ -14,15 +14,149 @@ In the previous tutorial, we finished our **Home Page**, so we will build out ou
 
 ![001-dashboard-page](./images/001-dashboard-page.png)
 
-Welcome to the next part of our React tutorial with Next.js. In the last post we finished our Signup & Signin Page with authentication using HTTPonly cookies, and saw how to protect our routes via Next.js middleware.
+Welcome to the next part of our React tutorial with Next.js. In the last post, we finished our Signup & Signin Page with authentication using HTTPonly cookies and saw how to protect our routes via Next.js middleware.
 
-In this section we will be working on completing our **Dashboard** and **Profile Page** where we will take a look on how to upload files using Next.js server components.
+In this section, we will be working on completing our **Dashboard** and **Profile Page**, where we will look at uploading files using Next.js server actions.
 
-Currently our **Dashboard** Page look like the following. Let's start by creating a `layout.tsx` page so we can give our page shared styling.
+Currently, our **Dashboard** Page looks like the following. Let's create a `layout.tsx` page to give our page shared styling.
 
 ![002-current-state](./images/002-current-state.png)
 
-Navigate to `src/app/dashboard` and create a file called `layout.tsx` and add the following code.
+Navigate to `src/app/dashboard`, create a file called `layout.tsx,` and add the following code.
+
+``` jsx
+import Link from "next/link";
+
+export default function DashboardLayout({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
+  return (
+    <div className="h-screen grid grid-cols-[240px_1fr]">
+      <nav className="border-r bg-gray-100/40 dark:bg-gray-800/40">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-[60px] items-center border-b px-6">
+            <Link
+              className="flex items-center gap-2 font-semibold"
+              href="/dashboard"
+            >
+              <LayoutDashboardIcon className="h-6 w-6" />
+              <span className="">Dashboard</span>
+            </Link>
+          </div>
+          <div className="flex-1 overflow-auto py-2">
+            <nav className="grid items-start px-4 text-sm font-medium">
+              <Link
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                href="/dashboard/summaries"
+              >
+                <ViewIcon className="h-4 w-4" />
+                Summaries
+              </Link>
+
+              <Link
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                href="/dashboard/account"
+              >
+                <UsersIcon className="h-4 w-4" />
+                Account
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </nav>
+      <main className="flex flex-col overflow-scroll">{children}</main>
+    </div>
+  );
+}
+
+function LayoutDashboardIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="7" height="9" x="3" y="3" rx="1" />
+      <rect width="7" height="5" x="14" y="3" rx="1" />
+      <rect width="7" height="9" x="14" y="12" rx="1" />
+      <rect width="7" height="5" x="3" y="16" rx="1" />
+    </svg>
+  );
+}
+
+function PieChartIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+      <path d="M22 12A10 10 0 0 0 12 2v10z" />
+    </svg>
+  );
+}
+
+function UsersIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function ViewIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12s2.545-5 7-5c4.454 0 7 5 7 5s-2.546 5-7 5c-4.455 0-7-5-7-5z" />
+      <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
+      <path d="M21 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2" />
+      <path d="M21 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2" />
+    </svg>
+  );
+}
+```
 
 Your updated UI should look like the following.
 
@@ -30,24 +164,24 @@ Your updated UI should look like the following.
 
 ## Updating Top Header To Include Username and Logout Button
 
-Currently our **Top Header** does not show the logged in user when we are logged in. Let's go ahead an update it.
+Currently, our **Top Header** does not show the user who is logged in when we are logged in. Let's go ahead and update it.
 
-Navigate to `src/app/components/custom/Header.tsx` make the following changes.
+Navigate to `src/components/custom/Header.tsx` and make the following changes.
 
-First, lets import our `getUserMeLoader` a function that we created in previous video to let us get our users data if they are logged in.
+First, let's import our `getUserMeLoader`, a function we created in the previous video to retrieve our users' data if they are logged in.
 
 ```jsx
 import { getUserMeLoader } from "@/data/services/get-user-me-loader";
 ```
 
-Next, let's call it insider our **Header** component with the following.
+Next, let's call it inside our **Header** component with the following.
 
 ```jsx
 const user = await getUserMeLoader();
 console.log(user);
 ```
 
-If you are loggedin you should see your user data in the console.
+If you are logged in, you should see your user data in the console.
 
 ```js
 {
@@ -66,15 +200,15 @@ If you are loggedin you should see your user data in the console.
 }
 ```
 
-We can use the `ok` key to conditionally render either our `Sign Up` button or the user's Name and Logout Button.
+We can use the `ok` key to conditionally render our `Sign Up` button or the user's Name and Logout Button.
 
-Before we can do that, let's import our **Logout** Button first, with the following.
+Before we can do that, let's import our **Logout** Button first with the following.
 
 ```jsx
 import { LogoutButton } from "./LogoutButton";
 ```
 
-Now, let's create a simple component that will show the logout button and the users name. You can see the code in the following snippet.
+Now, let's create a simple component showing the logout button and the user name. The code is in the following snippet.
 
 ```jsx
 interface AuthUserProps {
@@ -108,7 +242,7 @@ Now, let's update the following code.
 </div>
 ```
 
-And replace with the new changes.
+And replace them with the new changes.
 
 ```jsx
 <div className="flex items-center gap-4">
@@ -192,11 +326,11 @@ export async function Header({ data }: Readonly<HeaderProps>) {
 }
 ```
 
-Nice, now when you are logged in, you should see the **username** & **Logout** Button.
+Nice. Now, when you are logged in, you should see the username and Logout Buttons.
 
-Let's make another quick change in our `HeroSection.tsx` file found in `src/app/components/custom` folder.
+Let's make another quick change in our `HeroSection.tsx` file, which is in the `src/components/custom` folder.
 
-The cool part about **React Server Components** is that they can be responsible for their own data. Let's updated so if the user is **Logged In** they will see the button to take them to the **Dashboard**.
+The cool part about React Server Components is that they can be responsible for their own data. Let's update it so that if the user is Logged In, they will see the button to take them to the Dashboard.
 
 Let's make the following changes.
 
@@ -261,7 +395,7 @@ export async function HeroSection({ data }: Readonly<HeroSectionProps>) {
 }
 ```
 
-Now our UI in the **Hero Section** should look like the following if the user is logged in.
+Now, our UI in the Hero Section should look like the following if the user is logged in.
 
 ![004-dashboard](./images/004-dashboard.png)
 
@@ -269,7 +403,7 @@ Now, let's work on our **Account** Page.
 
 ## Creating Our User Profile Page (Account Page)
 
-Let's start by navigating to our `dashboard` folder and creating a folder called `account` with a `page.tsx` file.
+Let's start by navigating our `dashboard` folder and creating an `account` folder with a `page.tsx` file.
 
 We will add the following code.
 
@@ -293,11 +427,11 @@ export default async function AccountRoute() {
 }
 ```
 
-I commented out the components that we are yet to create in order to get our app to render. Let's create our **ProfileForm** and **ProfileImageForm** components.
+I commented out the components that we still need to create to get our app to render. Let's make our **ProfileForm** and **ProfileImageForm** components.
 
-### Create a Form To Update Users Details
+### Create a Form To Update User's Details
 
-Lets' navigate to `src/app/components/forms` and create a file called `ProfileForm.tsx`.
+Let's navigate to `src/components/forms` and create a `ProfileForm.tsx` file.
 
 Let's paste in the following code.
 
@@ -392,13 +526,13 @@ export function ProfileForm({
 
 ```
 
-Since we are using a new **Shadcn UI** component `Textarea` let's install it with the following.
+Since we use a new **Shadcn UI** component, `Textarea,` let's install it using the following:
 
 ```bash
 npx shadcn-ui@latest add textarea
 ```
 
-Now, let's uncomment our **ProfileForm** in our `dashboard/account/page.tsx` file.
+Let's uncomment our **ProfileForm** in our `dashboard/account/page.tsx` file.
 
 ```jsx
 import { getUserMeLoader } from "@/data/services/get-user-me-loader";
@@ -420,17 +554,17 @@ export default async function AccountRoute() {
 }
 ```
 
-Restart the app and you Next.js frontend and you should see the following.
+Restart the app and your Next.js frontend, and you should see the following.
 
 ![005-account-form](./images/005-account-form.png)
 
-You should notice two things, one we are not getting our users **First Name**, **Last Name**, **Bio** or number of credits they have left.
+You should notice two things. One, we are not getting our users' **First Name**, **Last Name**, **Bio**, or the number of credits they have left.
 
-And second, we are not able to submit the form because we did not implement the form logic via server action yet. We will do that next. But first let's update our user schema in Strapi.
+Second, we are not able to submit the form because we have not implemented the form logic via server action yet. We will do that next. But first, let's update our user schema in Strapi.
 
 ### Updating User Data Schema In Our Backend
 
-Open up your Strapi backend and navigate to the `content-builder` and choose the user collection type.
+Inside our Strapi Admin area, navigate to the `content-builder` and choose the user collection type.
 
 ![006-user-admin](./images/006-user-admin.png)
 
@@ -443,27 +577,27 @@ Let's add the following fields.
 | bio       | Text   | Long Text  |                           |
 | credits   | Number | Integer    | Set default value to be 0 |
 
-We will add the credits manually for new users when they sign in, but their default starting credits should be `0`.
+We will manually add the credits for new users when they sign in, but their default starting credits should be `0`.
 
-Once you are done you should have the following new fields.
+Once you are done, you should have the following new fields.
 
 ![007-user-fields](./images/007-user-fields.png)
 
-Now, let's manually update our user's information so we can check if we are getting it in our frontend.
+Now, let's manually update our users' information so we can check whether we are getting it in our front end.
 
 ![008-user-updated](./images/008-user-updated.png)
 
-When you navigate to your `Account` page in your frontend you should see the following output.
+Navigating to your `Account` page on your front end should see the following output.
 
 ![updated-user-ui](./images/009-updated-user-ui.png)
 
-Now, let's move on to the form update using **server action** and learn about **revalidatePath**.
+Let's move on to the form update using **server action**.
 
 ### Updating User Date With Server Actions
 
-First let's create our `updateProfileAction` that will be responsible for handling our form submission.
+First, let's create our `updateProfileAction` responsible for handling our form submission.
 
-Navigate to `src/data/actions` and create a new file called `profile-actions` and paste in the following code.
+Navigate to `src/data/actions`, create a new file called `profile-actions` and paste in the following code.
 
 ```jsx
 "use server";
@@ -500,11 +634,11 @@ export async function updateProfileAction(
 }
 ```
 
-We have created actions before, so not much new here except with one small addition, notice that we can access to `userId` which we are getting as one of the arguments.
+We have created actions before, so there is not much new here except one small addition. Notice that we can access `userId,` which we are getting as one of the arguments.
 
-Let's implement this action in our `ProfileForm` and see how we are passing the `userId` to our action.
+Let's implement this action in our `ProfileForm` and see how we pass the `userId` to our action.
 
-Navigate back to your `ProfileForm.tsx` file and make the following changes.
+Navigate to your `ProfileForm.tsx` file and make the following changes.
 
 First, let's import our action with the following.
 
@@ -513,7 +647,7 @@ import { useFormState } from "react-dom";
 import { updateProfileAction } from "@/data/actions/profile-actions";
 ```
 
-Next, let's create initial state for our `useFormState`.
+Next, let's create the initial state for our `useFormState`.
 
 ```jsx
 const INITIAL_STATE = {
@@ -523,15 +657,15 @@ const INITIAL_STATE = {
 };
 ```
 
-I am not going to focus on form validation with **Zod** since we already covered this in previous sections. And can be a great extra challenge for you to explore on your own.
+I will not focus on form validation with **Zod** since we already covered this in previous sections. It can be a great extra challenge for you to explore independently.
 
-But we are going to import our **StrapiErrors** component and handle those.
+But we will import our **StrapiErrors** component and handle those.
 
 ```jsx
 import { StrapiErrors } from "@/components/custom/StrapiErrors";
 ```
 
-Before using the `useFormState` like we did in previous sections, let's tale a look how we can bind additional data that we would like to pass to our server actions.
+Before using the `useFormState` as we did in previous sections, let's look at how we can bind additional data that we would like to pass to our server actions.
 
 Add the following line of code.
 
@@ -539,13 +673,13 @@ Add the following line of code.
 const updateProfileWithId = updateProfileAction.bind(null, data.id);
 ```
 
-We can use the `bind` method to add new data, that we will have access to inside our server action.
+We can use the `bind` method to add new data that we can access inside our server action.
 
-This is how we are setting our `userId` in order to be able to access it from our `updateProfileAction` server action.
+This is how we are setting our `userId` so that we can access it from our `updateProfileAction` server action.
 
 You can read more about it in the Next.js documentation [here](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#passing-additional-arguments).
 
-Now finally let's use our `useFormState` hook so we can have access to our returned data from our server actions.
+Finally, let's use our `useFormState` hook to access the data returned from our server actions.
 
 ```jsx
 const [formState, formAction] = useFormState(
@@ -563,7 +697,7 @@ Let's update our `form` tag with the following.
   >
 ```
 
-And don't forget to add our **StrapiErrors** component.
+And remember to add our **StrapiErrors** component.
 
 ```jsx
 <div className="flex justify-end">
@@ -684,9 +818,9 @@ export function ProfileForm({
 
 ```
 
-Let's test it and see if we are able to console log our changes before making the API call to Strapi.
+Let's test it and see if we can console our changes before making the API call to Strapi.
 
-If you check your terminal you will see the following console message.
+If you check your terminal, you will see the following console message.
 
 ```js
 updateProfileAction 3
@@ -699,11 +833,11 @@ updateProfileAction 3
 ############################
 ```
 
-Notice we are getting our **userId** and our data that we want to update.
+Notice we are getting our **userId** and the data we want to update.
 
-Now let's go ahead an implement the logic that will send this data to **Strapi**.
+Now, let's go ahead and implement the logic that will send this data to **Strapi**.
 
-But first let's navigate to `src/data/services` and create a new service called `mutate-data.ts` and import the following code.
+But first, let's navigate to `src/data/services`, create a new service called `mutate-data.ts`, and import the following code.
 
 ```ts
 import { getAuthToken } from "./get-token";
@@ -734,9 +868,9 @@ export async function mutateData(method: string, path: string, payload?: any) {
 }
 ```
 
-Here we are just using fetch to submit our data, and to make it more flexible and reusable we are passing `path` and `payload` as arguments.
+Here, we are just using fetch to submit our data, but to make it more flexible and reusable, we are passing `path` and `payload` as arguments.
 
-Let's use in on our `profile-actions.ts` file.
+Let's use it on our `profile-actions.ts` file.
 
 Let's make the following change.
 
@@ -796,29 +930,29 @@ export async function updateProfileAction(
 }
 ```
 
-Now, try to update your form and you will get the `forbidden` message.
+Now, try to update your form, and you will get the `forbidden` message.
 
 ![010-forbidden](./images/010-forbidden.png)
 
-In order for this to work, we need to give permission in Strapi's Admin to allow us to make the changes.
+In order for this to work, we need to grant permission to make the changes in Strapi's Admin.
 
 ![add-user-permission](./images/011-add-user-permission.png)
 
-**note:** One thing to keep in mind, you should take an additional step to protect your **User** route by creating an additional `policy` that will only allow you to update your own user date.
+**note:** One thing to remember is that you should take an additional step to protect your **User** route by creating an additional `policy` that will only allow you to update your user data.
 
-We will cover this as an addendum after we complete this serries.
+We will cover this as a supplement after we complete this series.
 
-But let's try to update our profile and see if it works.
+Let's try to update our profile and see if it works.
 
 ![012-form-update](./images/012-form-update.gif)
 
-Now that we can update our profile. Let's take a look how we can upload files in Next.js.
+Now that we can update our profile. Let's take a look at how we can upload files in Next.js.
 
 ### Uploading Files In Next.js Using Server Actions.
 
-We are now going to focus on how to handle file upload in **Next.js** with **Server Actions**. But before we can do that, let's create an **ImagePicker** component.
+We will now focus on handling file upload in **Next.js** with **Server Actions**. But before we can do that, let's create an **ImagePicker** component.
 
-Navigate to `src/components/custom` and create a file called `ImagePicker.tsx` and paste the following code.
+Navigate to `src/components/custom`, create a file called `ImagePicker.tsx,`, and paste the following code.
 
 ```jsx
 "use client";
@@ -911,11 +1045,11 @@ export default function ImagePicker({
 
 ```
 
-This components is responsible for letting the user select an image in the form.
+This component lets the user select an image in the form.
 
-Now, lets create our **ProfileImageForm** that will utilize this component.
+Now, let's create our **ProfileImageForm** to utilize this component.
 
-Navigate to `src/components/forms` and create a file called `ProfileImageForm.tsx` and paste in the following code.
+Navigate to `src/components/forms`, create a file called `ProfileImageForm.tsx`, and paste it into the following code.
 
 ```jsx
 "use client";
@@ -947,22 +1081,21 @@ export function ProfileImageForm({
   data,
   className,
 }: {
-  data: Readonly<ProfileImageFormProps>;
-  className?: string;
+  data: Readonly<ProfileImageFormProps>,
+  className?: string,
 }) {
+  const uploadProfileImageWithIdAction = uploadProfileImageAction.bind(
+    null,
+    data?.id
+  );
 
-  const uploadProfileImageWithIdAction = uploadProfileImageAction.bind(null, data?.id);
-  
   const [formState, formAction] = useFormState(
     uploadProfileImageWithIdAction,
     initialState
   );
 
   return (
-    <form
-      className={cn("space-y-4", className)}
-      action={formAction}
-    >
+    <form className={cn("space-y-4", className)} action={formAction}>
       <div className="">
         <ImagePicker
           id="image"
@@ -979,10 +1112,9 @@ export function ProfileImageForm({
     </form>
   );
 }
-
 ```
 
-Now let's navigate to `profile-actions.ts` and update the file with the following code.
+Now, navigate to `profile-actions.ts` and update the file with the following code.
 
 ```jsx
 "use server";
@@ -993,7 +1125,10 @@ import { getUserMeLoader } from "@/data/services/get-user-me-loader";
 import { mutateData } from "@/data/services/mutate-data";
 import { flattenAttributes } from "@/lib/utils";
 
-import { fileDeleteService, fileUploadService } from "@/data/services/file-service";
+import {
+  fileDeleteService,
+  fileUploadService,
+} from "@/data/services/file-service";
 
 import { revalidatePath } from "next/cache";
 
@@ -1046,7 +1181,6 @@ export async function updateProfileAction(
   };
 }
 
-
 const MAX_FILE_SIZE = 5000000;
 
 const ACCEPTED_IMAGE_TYPES = [
@@ -1087,7 +1221,6 @@ export async function uploadProfileImageAction(
     image: data.image,
   });
 
-
   if (!validatedFields.success) {
     return {
       ...prevState,
@@ -1122,31 +1255,40 @@ export async function uploadProfileImageAction(
   const updatedImageId = fileUploadResponse[0].id;
   const payload = { image: updatedImageId };
 
-  const updateImageResponse = await mutateData( "PUT",`/api/users/${userId}`,payload);
+  const updateImageResponse = await mutateData(
+    "PUT",
+    `/api/users/${userId}`,
+    payload
+  );
   const flattenedData = flattenAttributes(updateImageResponse);
   revalidatePath("/dashboard/account");
-  return { ...prevState, data: flattenedData, zodErrors: null, strapiErrors: null, message: "Image Uploaded"};
+  return {
+    ...prevState,
+    data: flattenedData,
+    zodErrors: null,
+    strapiErrors: null,
+    message: "Image Uploaded",
+  };
 }
-
 ```
 
-The above server action handles the following steps
+The above server action handles the following steps.
 
-1. First checks if the user is logged in and identifies their account.
-2. It then checks the image the user selected to make sure it's a valid image type (like JPEG or PNG) and not too large in file size.
+1. First, check if the user is logged in and identifies their account.
+2. It then checks the image the user selected to ensure it's a valid image type (like JPEG or PNG) and not too large in file size.
 3. If the image is valid, and there was previously an image, the old image is removed.
-4. The new image is then uploaded to the server and associated with the user's profile.
+4. The new image is uploaded to the server and associated with the user's profile.
 5. The application updates the user's profile with this new image. If there's an error, it informs the user.
 
-In essence, this code is about two main actions on a user's profile in an application: updating personal details and changing the profile picture. 
+In essence, this code is about two main actions on a user's profile in an application: updating personal details and changing the profile picture.
 
-It makes sure that the data is valid via **Zod** and communicates with the server to store these changes, providing feedback to the user based on whether these actions were successful or not.
+It ensures that the data is valid via **Zod** and communicates with the server to store these changes, providing feedback to the user based on whether these actions were successful.
 
-To check if the image is valid we are using `refine` method in **Zod** that allows us to create custom validation logic.
+To check if the image is valid, we use the `refine` method in **Zod**, which allows us to create custom validation logic.
 
-Let's briefly look over the use of `refine` in the code below.
+Let's briefly review the Use of `refine` in the code below.
 
-``` ts
+```ts
 const imageSchema = z.object({
   image: z
     .any()
@@ -1164,20 +1306,19 @@ const imageSchema = z.object({
 ```
 
 **Why Use refine**
-Flexibility and Precision: refine allows for custom validations beyond basic type checks. This means you can implement complex, tailored criteria for data validity.
+Flexibility and Precision: Refines allow for custom validations beyond basic type checks, which means you can implement complex, tailored criteria for data validity.
 
-User Feedback: By specifying an error message with each refine, you provide clear, actionable feedback to the user, improving the user experience by guiding them on how to correct their input.
+User Feedback: By specifying an error message with each refine, you provide clear, actionable feedback, improving the user experience by guiding them through correcting their input.
 
-Composition: Multiple refine validations can be chained together, allowing for a sequence of checks that are both comprehensive and readable.
+Composition: Multiple refine validations can be chained together, allowing for a comprehensive and readable sequence of checks.
 
-You can learn more about using `refine` [here](https://zod.dev/?id=refine). 
+You can learn more about using `refine` [here](https://zod.dev/?id=refine).
 
-
-Finally let's create our two services,  **fileDeleteService** & **fileUploadService**:  they will be responsible for handling deleting an image that already exist and uploading a new one.
+Finally, let's create our two services, **fileDeleteService** and **fileUploadService**. They will be responsible for deleting an existing image and uploading a new one.
 
 Navigate to `src/data/services` and create a file named `file-service.ts` and paste in the following code.
 
-To learn more about `file upload` in Strapi take a look here in the [docs](https://docs.strapi.io/dev-docs/plugins/upload#endpoints).
+To learn more about `file upload` in Strapi, see the [docs](https://docs.strapi.io/dev-docs/plugins/upload#endpoints).
 
 ```ts
 import { getAuthToken } from "@/data/services/get-token";
@@ -1222,31 +1363,31 @@ export async function fileUploadService(image: any) {
 }
 ```
 
-Now that our frontend is ready, let's add the `image` field in our user collection type in Strapi Admin.
+Now that our front end is ready let's add the `image` field to our user collection type in Strapi Admin.
 
 ![013-add-image](./images/013-add-image.png)
 
-Navigate to **Content Type Builder** click on the **User** collection type and click on the **add another field to this collection** button.
+Navigate to Content Type Builder, click on the User collection type, and click on the Add Another Field to This Collection button.
 
 ![014-select-media](./images/014-select-media.png)
 
 Select the `media` field.
 
-Make sure to name it `image` and select `Single media` option and then navigate to `Advanced Settings` tab.
+Make sure to name it `image`, select the `Single media` option, and then navigate to the `Advanced Settings` tab.
 
-In the advance setting tabs, configure  `allowed file types` only to include images, once done click on the `Finish` button.
+In the advanced settings tabs, configure `allowed file types` only to include images. Once you've done this, click the `Finish` button.
 
-Now, add a image to your user. 
+Now, add an image to your user.
 
 ![017-upload-image](./images/017-upload-image.png)
 
-Refresh you frontend application and you should now see your newly added user image.
+Refresh your frontend application; you should now see your newly added user image.
 
-![018-user-image](./images/018-user-image.png) 
+![018-user-image](./images/018-user-image.png)
 
-Before we can test if our image uploader works, let's change our setting in Strapi to enable file upload and delete.
+Before we can test whether our image uploader works, let's change our Strapi setting to enable file upload and deletion.
 
-You can find these options under `Settings` => `USERS & PERMISSIONS PLUGIN` => `Roles` => `Authenticated` => `Upload`.
+These options are under `Settings` => `USERS & PERMISSIONS PLUGIN` => `Roles` => `Authenticated` => `Upload`.
 
 Check both `upload` and `destroy` boxes.
 
@@ -1256,18 +1397,18 @@ Let's test out our upload functionality.
 
 ![20-test-upload](./images/20-test-upload.gif)
 
-Nice, we now have our file upload working. 
+Excellent, we now have our file upload working.
 
-In the next post, we will take a look how to handle our video summary generation.
+The following post will look at handling our video summary generation.
 
 ## Conclusion
 
-Nice, we completed our initial **Dashboard** layout with a **Account** section where the user is able to update their `first name`, `last name`, `bio` and `image`.
+Excellent. We completed our initial **Dashboard** layout with an **Account** section where the user can update their `first name`, `last name`, `bio`, and `image`.
 
-We covered how to handle file upload using server actions, by this point you should be starting to feel more comfortable on how to work with `forms` and `server actions` in Next.js.
+We covered how to handle file uploads using server actions. By this point, you should be starting to feel more comfortable working with `forms` and `server actions` in Next.js.
 
-In the next post, we will start working on our main feature which will allow us to summarize our youtube videos.
+In the next post, we will start working on our main feature, which will allow us to summarize our YouTube videos.
 
 See you in the next one.
 
-P.S.  If you made it this far thank you.  I really appreciate your support.  I did my best do dillgence, but if you find errors, shared them in the comments bellow.  
+Also, if you made it this far, thank you. I really appreciate your support. I did my best to do diligence, but if you find errors, share them in the comments below.
