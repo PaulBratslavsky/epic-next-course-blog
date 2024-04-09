@@ -22,7 +22,7 @@ But first, let's start by creating our **Summary Form** that we can use to submi
 
 Navigate to `src/components/forms` and create a new file called `SummaryForm.tsx` and paste in the following code as the starting point.
 
-```jsx
+```tsx
 "use client";
 
 import { useState } from "react";
@@ -35,19 +35,17 @@ import { SubmitButton } from "@/components/custom/SubmitButton";
 interface StrapiErrorsProps {
   message: string | null;
   name: string;
-  status: string | null;
 }
 
 const INITIAL_STATE = {
   message: null,
   name: "",
-  status: null,
 };
 
 export function SummaryForm() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState < StrapiErrorsProps > INITIAL_STATE;
-  const [value, setValue] = useState < string > "";
+  const [error, setError] = useState<StrapiErrorsProps>(INITIAL_STATE);
+  const [value, setValue] = useState<string>("");
 
   async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,7 +95,7 @@ export function SummaryForm() {
 }
 ```
 
-The above code contains a basic form UI, and a `handleFormSubmit` function which has not been implemented yet.
+The above code contains a basic form UI, and a `handleFormSubmit` function which does not include any of our logic to get the summary yet.
 
 We are also using **Sonner** one of my favorite toast libraries. You can learn more about it [here](https://sonner.emilkowal.ski/).
 
@@ -109,13 +107,13 @@ npx shadcn-ui@latest add sonner
 
 Once **Sonner** is installed, let's implemented in our main `layout.tsx` file by adding the following import.
 
-```jsx
+```tsx
 import { Toaster } from "@/components/ui/sonner";
 ```
 
 And adding the code below above our `TopNav`.
 
-```jsx
+```tsx
 <body className={inter.className}>
   <Toaster position="bottom-center" />
   <Header data={globalData.header} />
@@ -126,7 +124,7 @@ And adding the code below above our `TopNav`.
 
 Now, let's add this form to our top navigation by navigating to `src/components/custom/Header.tsx` file and making the following changes.
 
-```jsx
+```tsx
 // import the form
 import { SummaryForm } from "@/components/forms/SummaryForm";
 
@@ -186,9 +184,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Now that we have our basic route handler, let's go back to our `SummaryForm.tsx` file and see if we can make a request to this endpoint.
-
-But first let's navigate to `src/data/services` and create a new file called `summary-service.ts` and inside create a new service called `generateSummaryService.ts` and add the following code.
+Next let's create a service to call our new route handler. Navigate to `src/data/services` and create a new file called `summary-service.ts` and inside create a new service called `generateSummaryService.ts` and add the following code.
 
 ```ts
 export async function generateSummaryService(videoId: string) {
@@ -209,25 +205,30 @@ export async function generateSummaryService(videoId: string) {
 
 The following service allow us to call our newly created route handler located at `api/summarize` endpoint. It expects us to pass a `videoId` for the video that we would like to summarize.
 
+Now that we have our basic route handler, let's go back to our `SummaryForm.tsx` file and see if we can make a request to this endpoint.
+
 Now, let's modify our `handleFormSubmit` to use our newly created service with the following code. Don't forget to import the `generateSummaryService` service.
 
-```jsx
+```tsx
+import { generateSummaryService } from "@/data/services/summary-service";
+```
+
+```tsx
 async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
+  event.preventDefault();
+  setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const videoId = formData.get("videoId") as string;
+  const formData = new FormData(event.currentTarget);
+  const videoId = formData.get("videoId") as string;
 
-    console.log(videoId);
+  console.log(videoId);
 
-    const summaryResponseData = await generateSummaryService(videoId);
-    console.log(summaryResponseData, "Response from route handler");
+  const summaryResponseData = await generateSummaryService(videoId);
+  console.log(summaryResponseData, "Response from route handler");
 
-    toast.success("Testing Toast");
-    setLoading(false);
-  }
-
+  toast.success("Testing Toast");
+  setLoading(false);
+}
 ```
 
 Now when you submit your form, inside our console log you should see the message being returned from our route handler.
@@ -263,8 +264,6 @@ But for this video we will just go with the following, start by navigating to `s
 ```ts
 import { parse } from "node-html-parser";
 
-const RE_YOUTUBE =
-  /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36,gzip(gfe)";
 
@@ -279,7 +278,8 @@ type YtFetchConfig = {
 };
 
 async function fetchTranscript(videoId: string, config: YtFetchConfig = {}) {
-  const identifier = retrieveVideoId(videoId);
+  console.log("fetchTranscript", videoId);
+  const identifier = extractYouTubeID(videoId);
   const lang = config?.lang ?? "en";
   try {
     const transcriptUrl = await fetch(
@@ -359,14 +359,36 @@ function parseTranscriptEndpoint(document: any, langCode?: string) {
   }
 }
 
-function retrieveVideoId(videoId: string) {
-  const regex =
-    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/i;
-  const matchId = videoId.match(regex);
-  if (matchId && matchId.length) {
-    return matchId[1];
+export function extractYouTubeID(urlOrID: string): string | null {
+  // Regular expression for YouTube ID format
+  const regExpID = /^[a-zA-Z0-9_-]{11}$/;
+
+  // Check if the input is a YouTube ID
+  if (regExpID.test(urlOrID)) {
+    return urlOrID;
   }
-  throw new YoutubeTranscriptError("Impossible to retrieve Youtube video ID.");
+
+  // Regular expression for standard YouTube links
+  const regExpStandard = /youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/;
+
+  // Regular expression for YouTube Shorts links
+  const regExpShorts = /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/;
+
+  // Check for standard YouTube link
+  const matchStandard = urlOrID.match(regExpStandard);
+
+  if (matchStandard) {
+    return matchStandard[1];
+  }
+
+  // Check for YouTube Shorts link
+  const matchShorts = urlOrID.match(regExpShorts);
+  if (matchShorts) {
+    return matchShorts[1];
+  }
+
+  // Return null if no match is found
+  return null;
 }
 
 export { fetchTranscript, YoutubeTranscriptError };
@@ -375,7 +397,7 @@ export { fetchTranscript, YoutubeTranscriptError };
 You will need to install the `node-html-parser` dependency.
 
 ```bash
-yarn add 'node-html-parser';
+yarn add node-html-parser
 ```
 
 Once everything is installed, let's implement this in our route handles and see if we can get your YouTube transcript.
@@ -384,23 +406,29 @@ Navigate to `src/app/api/summarize/route.ts` and let's import our `fetchTranscri
 
 We will also create a wrapper function that will call this service. Here is what it will look like.
 
+Import `fetchTranscript` function we just added.
+
 ```ts
-async function getTranscript(id: string) {
-  try {
-    return await fetchTranscript(id);
-  } catch (error) {
-    console.error("Failed to get transcript:", error);
-    throw error;
-  }
-}
+import { fetchTranscript } from "@/lib/youtube-transcript";
 ```
 
-Inside our route handle in the try/catch blog we will add the following.
+Let's make the following changes.
 
 ```ts
 const body = await req.json();
 const videoId = body.videoId;
-const transcript = await getTranscript(videoId);
+
+let transcript: Awaited<ReturnType<typeof fetchTranscript>>;
+
+try {
+  transcript = await fetchTranscript(videoId);
+} catch (error) {
+  console.error("Error processing request:", error);
+  if (error instanceof Error)
+    return new Response(JSON.stringify({ error: error.message }));
+  return new Response(JSON.stringify({ error: "Error getting transcript." }));
+}
+
 console.log("Transcript:", transcript);
 ```
 
@@ -416,18 +444,33 @@ async function getTranscript(id: string) {
   try {
     return await fetchTranscript(id);
   } catch (error) {
-    console.error("Failed to get transcript:", error);
-    throw error;
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(
+      JSON.stringify({ error: "Failed to generate summary." })
+    );
   }
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const videoId = body.videoId;
-    const transcript = await getTranscript(videoId);
-    console.log("Transcript:", transcript);
+  console.log("FROM OUR ROUTE HANDLER:", req.body);
+  const body = await req.json();
+  const videoId = body.videoId;
 
+  let transcript: Awaited<ReturnType<typeof getTranscript>>;
+
+  try {
+    transcript = await getTranscript(videoId);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(JSON.stringify({ error: "Unknown error" }));
+  }
+
+  console.log("Transcript:", transcript);
+
+  try {
     return new Response(
       JSON.stringify({ data: "return from our handler", error: null }),
       {
@@ -492,8 +535,8 @@ function transformData(data: any[]) {
 Now let's use it.
 
 ```ts
-const transcriptText = transformData(transcript);
-console.log(transcriptText);
+const transformedData = transformData(transcript);
+console.log("Transcript:", transformedData);
 ```
 
 The updated code should look like the following.
@@ -506,8 +549,11 @@ async function getTranscript(id: string) {
   try {
     return await fetchTranscript(id);
   } catch (error) {
-    console.error("Failed to get transcript:", error);
-    throw error;
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(
+      JSON.stringify({ error: "Failed to generate summary." })
+    );
   }
 }
 
@@ -525,13 +571,25 @@ function transformData(data: any[]) {
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const videoId = body.videoId;
-    const transcript = await getTranscript(videoId);
-    const transcriptText = transformData(transcript);
-    console.log(transcriptText);
+  console.log("FROM OUR ROUTE HANDLER:", req.body);
+  const body = await req.json();
+  const videoId = body.videoId;
 
+  let transcript: Awaited<ReturnType<typeof getTranscript>>;
+
+  try {
+    transcript = await getTranscript(videoId);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error }));
+    return new Response(JSON.stringify({ error: "Unknown error" }));
+  }
+
+  const transformedData = transformData(transcript);
+  console.log("Transcript:", transformedData);
+
+  try {
     return new Response(
       JSON.stringify({ data: "return from our handler", error: null }),
       {
@@ -600,40 +658,45 @@ export function extractYouTubeID(urlOrID: string): string | null {
 }
 ```
 
-Let's navigate to our `SummaryForm.tsx` file and update it with the following changes inside of our `handleFormSubmit` function.
+Let's navigate to our `SummaryForm.tsx` file import our `extractYouTubeID`
 
-```jsx
+```tsx
+import { extractYouTubeID } from "@/lib/utils";
+```
+
+And update it with the following changes inside of our `handleFormSubmit` function.
+
+```tsx
 async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    toast.success("Submitting Form");
+  event.preventDefault();
+  setLoading(true);
+  toast.success("Submitting Form");
 
-    const formData = new FormData(event.currentTarget);
-    const videoId = formData.get("videoId") as string;
+  const formData = new FormData(event.currentTarget);
+  const videoId = formData.get("videoId") as string;
 
-    const processedVideoId = extractYouTubeID(videoId);
+  const processedVideoId = extractYouTubeID(videoId);
 
-    if (!processedVideoId) {
-      toast.error("Invalid Youtube Video ID");
-      setLoading(false);
-      setValue("");
-      setError({
-        ...INITIAL_STATE,
-        message: "Invalid Youtube Video ID",
-        name: "Invalid Id",
-      });
-      return;
-    }
-
-    toast.success("Generating Summary");
-
-    const summaryResponseData = await generateSummaryService(videoId);
-    console.log(summaryResponseData, "Response from route handler");
-
-    toast.success("Summary Created");
+  if (!processedVideoId) {
+    toast.error("Invalid Youtube Video ID");
     setLoading(false);
+    setValue("");
+    setError({
+      ...INITIAL_STATE,
+      message: "Invalid Youtube Video ID",
+      name: "Invalid Id",
+    });
+    return;
   }
 
+  toast.success("Generating Summary");
+
+  const summaryResponseData = await generateSummaryService(videoId);
+  console.log(summaryResponseData, "Response from route handler");
+
+  toast.success("Summary Created");
+  setLoading(false);
+}
 ```
 
 Let's test our the front end.
@@ -680,6 +743,37 @@ export async function POST(req: NextRequest) {
 The final code should look like the following.
 
 ```ts
+import { NextRequest } from "next/server";
+import { fetchTranscript } from "@/lib/youtube-transcript";
+
+import { getUserMeLoader } from "@/data/services/get-user-me-loader";
+import { getAuthToken } from "@/data/services/get-token";
+
+async function getTranscript(id: string) {
+  try {
+    return await fetchTranscript(id);
+  } catch (error) {
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(
+      JSON.stringify({ error: "Failed to generate summary." })
+    );
+  }
+}
+
+function transformData(data: any[]) {
+  let text = "";
+
+  data.forEach((item) => {
+    text += item.text + " ";
+  });
+
+  return {
+    data: data,
+    text: text.trim(),
+  };
+}
+
 export async function POST(req: NextRequest) {
   const user = await getUserMeLoader();
   const token = await getAuthToken();
@@ -699,13 +793,25 @@ export async function POST(req: NextRequest) {
       { status: 402 }
     );
 
-  try {
-    const body = await req.json();
-    const videoId = body.videoId;
-    const transcript = await getTranscript(videoId);
-    const transcriptText = transformData(transcript);
-    console.log(transcriptText);
+  console.log("FROM OUR ROUTE HANDLER:", req.body);
+  const body = await req.json();
+  const videoId = body.videoId;
 
+  let transcript: Awaited<ReturnType<typeof getTranscript>>;
+
+  try {
+    transcript = await getTranscript(videoId);
+  } catch (error) {
+    console.error("Error processing request:", error);
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(JSON.stringify({ error: "Unknown error" }));
+  }
+
+  const transformedData = transformData(transcript);
+  console.log("Transcript:", transformedData);
+
+  try {
     return new Response(
       JSON.stringify({ data: "return from our handler", error: null }),
       {
@@ -725,8 +831,9 @@ Now we have to add a check in our `SummaryForm.tsx` file to handle the errors in
 
 Let's add the following code after this line.
 
-```jsx
+```tsx
 const summaryResponseData = await generateSummaryService(videoId);
+console.log(summaryResponseData, "Response from route handler");
 
 // add the following
 
@@ -747,49 +854,49 @@ if (summaryResponseData.error) {
 
 The completed code should look like the following.
 
-```jsx
+```tsx
 async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    toast.success("Submitting Form");
+  event.preventDefault();
+  setLoading(true);
+  toast.success("Submitting Form");
 
-    const formData = new FormData(event.currentTarget);
-    const videoId = formData.get("videoId") as string;
+  const formData = new FormData(event.currentTarget);
+  const videoId = formData.get("videoId") as string;
 
-    const processedVideoId = extractYouTubeID(videoId);
+  const processedVideoId = extractYouTubeID(videoId);
 
-    if (!processedVideoId) {
-      toast.error("Invalid Youtube Video ID");
-      setLoading(false);
-      setValue("");
-      setError({
-        ...INITIAL_STATE,
-        message: "Invalid Youtube Video ID",
-        name: "Invalid Id",
-      });
-      return;
-    }
-
-    toast.success("Generating Summary");
-
-    const summaryResponseData = await generateSummaryService(videoId);
-
-    if (summaryResponseData.error) {
-      setValue("");
-      toast.error(summaryResponseData.error);
-      setError({
-        ...INITIAL_STATE,
-        message: summaryResponseData.error,
-        name: "Summary Error",
-      });
-      setLoading(false);
-      return;
-    }
-
-    toast.success("Summary Created");
+  if (!processedVideoId) {
+    toast.error("Invalid Youtube Video ID");
     setLoading(false);
+    setValue("");
+    setError({
+      ...INITIAL_STATE,
+      message: "Invalid Youtube Video ID",
+      name: "Invalid Id",
+    });
+    return;
   }
 
+  toast.success("Generating Summary");
+
+  const summaryResponseData = await generateSummaryService(videoId);
+  console.log(summaryResponseData, "Response from route handler");
+
+  if (summaryResponseData.error) {
+    setValue("");
+    toast.error(summaryResponseData.error);
+    setError({
+      ...INITIAL_STATE,
+      message: summaryResponseData.error,
+      name: "Summary Error",
+    });
+    setLoading(false);
+    return;
+  }
+
+  toast.success("Summary Created");
+  setLoading(false);
+}
 ```
 
 Now let's test our form.
@@ -846,7 +953,11 @@ async function generateSummary(content: string, template: string) {
     const summary = await chain.invoke({ text: content });
     return summary;
   } catch (error) {
-    console.error("Error generating summary:", error);
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(
+      JSON.stringify({ error: "Failed to generate summary." })
+    );
   }
 }
 ```
@@ -894,37 +1005,41 @@ export async function POST(req: NextRequest) {
       { status: 402 }
     );
 
+  console.log("FROM OUR ROUTE HANDLER:", req.body);
+  const body = await req.json();
+  const videoId = body.videoId;
+
+  let transcript: Awaited<ReturnType<typeof fetchTranscript>>;
+
   try {
-    const body = await req.json();
-    const videoId = body.videoId;
-    const transcript = await getTranscript(videoId);
-    const transcriptText = transformData(transcript);
-
-    const summary = await generateSummary(transcriptText.text, TEMPLATE);
-    console.log(summary);
-
-    if (!summary) {
-      return new Response(
-        JSON.stringify({ data: null, error: "Failed to generate summary" }),
-        { status: 500 }
-      );
-    }
-
-    return new Response(JSON.stringify({ data: summary, error: null }), {
-      status: 200,
-    });
+    transcript = await fetchTranscript(videoId);
   } catch (error) {
     console.error("Error processing request:", error);
     if (error instanceof Error)
-      return new Response(JSON.stringify({ error: error }));
-    return new Response(JSON.stringify({ error: "Unknown error" }));
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(JSON.stringify({ error: "Error getting transcript." }));
+  }
+
+  const transformedData = transformData(transcript);
+  console.log("Transformed Data", transformedData);
+
+  let summary: Awaited<ReturnType<typeof generateSummary>>;
+
+  try {
+    summary = await generateSummary(transformedData.text, TEMPLATE);
+    return new Response(JSON.stringify({ data: summary, error: null }));
+  } catch (error) {
+    console.error("Error processing request:", error);
+    if (error instanceof Error)
+      return new Response(JSON.stringify({ error: error.message }));
+    return new Response(JSON.stringify({ error: "Error generating summary." }));
   }
 }
 ```
 
 In the code above we implemented our `generateSummary` function. Which will be in charge of generating our summary and sending it back you our form where we will create a server action to be responsible for saving our data into our Strapi backend.
 
-But first let's console.log the output to see if we are getting back our summery.
+But first let's console.log the output to see if we are getting back our summary.
 
 First create a `.env.local` file and add our Open AI API key.
 
@@ -939,7 +1054,7 @@ First create a `.env.local` file and add our Open AI API key.
 OPENAI_API_KEY=ADD_YOUR_KEY_HERE
 ```
 
-Now let's test out our form and see if we are able to get our summary.
+Now let's test out our form and see if we are able to get our summary. Make sure to add some credits to your user.
 
 Nice, we are able to see our output in the console.
 
@@ -1002,11 +1117,11 @@ Let's start by navigating to `srs/data/actions` and creating a new file called `
 import { getAuthToken } from "@/data/services/get-token";
 import { mutateData } from "@/data/services/mutate-data";
 import { flattenAttributes } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 interface Payload {
   data: {
+    title?: string;
     videoId: string;
     summary: string;
   };
@@ -1018,97 +1133,104 @@ export async function createSummaryAction(payload: Payload) {
 
   const data = await mutateData("POST", "/api/summaries", payload);
   const flattenedData = flattenAttributes(data);
-  revalidatePath("/");
   redirect("/dashboard/summaries/" + flattenedData.id);
 }
 ```
 
 Now that we have our `createSummaryAction` let's use it in our `handleFormSubmit` found in our form named `SummaryForm`.
 
+First let's import our newly created action.
+
+```tsx
+import { createSummaryAction } from "@/data/actions/summary-actions";
+```
+
 Update the `handleFormSubmit` with the following code.
 
-```jsx
+```tsx
 async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    toast.success("Submitting Form");
+  event.preventDefault();
+  setLoading(true);
+  toast.success("Submitting Form");
 
-    const formData = new FormData(event.currentTarget);
-    const videoId = formData.get("videoId") as string;
+  const formData = new FormData(event.currentTarget);
+  const videoId = formData.get("videoId") as string;
 
-    const processedVideoId = extractYouTubeID(videoId);
+  const processedVideoId = extractYouTubeID(videoId);
 
-    if (!processedVideoId) {
-      toast.error("Invalid Youtube Video ID");
-      setLoading(false);
-      setValue("");
-      setError({
-        ...INITIAL_STATE,
-        message: "Invalid Youtube Video ID",
-        name: "Invalid Id",
-      });
-      return;
-    }
-
-    toast.success("Generating Summary");
-
-    const summaryResponseData = await generateSummaryService(videoId);
-
-    if (summaryResponseData.error) {
-      setValue("");
-      toast.error(summaryResponseData.error);
-      setError({
-        ...INITIAL_STATE,
-        message: summaryResponseData.error,
-        name: "Summary Error",
-      });
-      setLoading(false);
-      return;
-    }
-
-    toast.success("Summary Generated");
-
-    const payload = {
-      data: {
-        videoId: processedVideoId,
-        summary: summaryResponseData.data,
-      },
-    };
-
-    await createSummaryAction(payload);
-    toast.success("Summary Saved");
-
-    setValue("");
+  if (!processedVideoId) {
+    toast.error("Invalid Youtube Video ID");
     setLoading(false);
+    setValue("");
+    setError({
+      ...INITIAL_STATE,
+      message: "Invalid Youtube Video ID",
+      name: "Invalid Id",
+    });
+    return;
   }
+
+  toast.success("Generating Summary");
+
+  const summaryResponseData = await generateSummaryService(videoId);
+  console.log(summaryResponseData, "Response from route handler");
+
+  if (summaryResponseData.error) {
+    setValue("");
+    toast.error(summaryResponseData.error);
+    setError({
+      ...INITIAL_STATE,
+      message: summaryResponseData.error,
+      name: "Summary Error",
+    });
+    setLoading(false);
+    return;
+  }
+
+  const payload = {
+    data: {
+      title: `Summary for video: ${processedVideoId}`,
+      videoId: processedVideoId,
+      summary: summaryResponseData.data,
+    },
+  };
+
+  try {
+    await createSummaryAction(payload);
+  } catch (error) {
+    toast.error("Error Creating Summary");
+    setError({
+      ...INITIAL_STATE,
+      message: "Error Creating Summary",
+      name: "Summary Error",
+    });
+    setLoading(false);
+    return;
+  }
+
+  toast.success("Summary Created");
+  setLoading(false);
+}
 ```
 
 The above code will be responsible for saving our data into Strapi.
 
-
-Before testing out our form, we need to update user permissions to allows us to set user relation to our summary.
-
-![](./images/012-add-user-relation.png)
-
-Even though this will work, there is more secure way of handling this, and instead of setting this relationship in our frontend we can handle it via Strapi middleware.
-
-We will circle back to this and refactor after all the Next js frontend logic is done.
-
-Now, let's test out our form.
-
-We should be redirected to our `summaries` route that we are yet to create.
+Let's do a quick test and see if it works. We should be redirected to our `summaries` route that we are yet to create so we will get our not found page. This is ok and we will fix soon.
 
 ![](./images/013-redirect.gif)
 
-So we will get our not found page, but this is something we will fix in the next section.
+But you should see your data in your Strapi Admin.
+
+![](./images/013-1-response.png)
+
+You will notice that we are not setting our user, nor are we deduction one credit on creation. This is something we will do in Strapi by creating a custom middleware. But first let's finish all of our Next.js UI.
 
 ## Create Summary Page Card View
 
 Let's navigate to our `dashboard` folder and inside create another folder named `summaries` with a fille named `page.tsx` and paste in the following code.
 
-```jsx
+```tsx
 import Link from "next/link";
-
 import { getSummaries } from "@/data/loaders";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1119,17 +1241,17 @@ interface LinkCardProps {
   summary: string;
 }
 
-function LinkCard({ id, title, summary }: LinkCardProps) {
+function LinkCard({ id, title, summary }: Readonly<LinkCardProps>) {
   return (
     <Link href={`/dashboard/summaries/${id}`}>
       <Card className="relative">
         <CardHeader>
-          <CardTitle className="leading-5">
+          <CardTitle className="leading-8 text-pink-500">
             {title || "Video Summary"}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="w-full mb-4 ">
+          <p className="w-full mb-4 leading-7">
             {summary.slice(0, 164) + " [read more]"}
           </p>
         </CardContent>
@@ -1183,7 +1305,7 @@ async function fetchData(url: string) {
     return flattenAttributes(data);
   } catch (error) {
     console.error("Error fetching data:", error);
-    throw error; // or return null;
+    throw error;
   }
 }
 ```
@@ -1199,16 +1321,24 @@ export async function getSummaries() {
 
 Now, we need to update the following permissions in Strapi dashboard.
 
-![](./images/014-permissions.gif)
+![](./images/014-permissions.gif) 
 
-Now we should be able to see the list view.
+Under `Settings` => `User Permissions` => `Roles` => `Authenticated` and set **Global** and **Home-page** checkbox to `checked`.
+
+Restart your application and you should now be able to see the list view.
+
+![](./images/014-1-list.png)
 
 Now, let's create the Single Card view.
 
 1. inside summaries create a new folder called `[videoId]`
+
+explain dynamic routes here
+
+
 2. create a `layout.tsx` file with the following code.
 
-```jsx
+```tsx
 import { extractYouTubeID } from "@/lib/utils";
 
 export default async function SummarySingleRoute({
@@ -1220,10 +1350,10 @@ export default async function SummarySingleRoute({
 }) {
   return (
     <div>
-      <div className="h-full grid gap-4 grid-cols-5 px-6">
+      <div className="h-full grid gap-4 grid-cols-5 p-4">
         <div className="col-span-3">{children}</div>
         <div className="col-span-2">
-          <div className="rounded-lg overflow-hidden">
+          <div>
             <p>Video will go here</p>
           </div>
         </div>
@@ -1231,15 +1361,14 @@ export default async function SummarySingleRoute({
     </div>
   );
 }
-
 ```
 
 3. Create `page.tsx` file with the following.
 
-```jsx
+```tsx
 interface ParamsProps {
   params: {
-    videoId: string,
+    videoId: string;
   };
 }
 
@@ -1256,7 +1385,7 @@ Now that we know that our pages work let's create the loaders to get the appropr
 
 Let's start by navigating to our `loaders.ts` file and add the following functions.
 
-```jsx
+```tsx
 export async function getSummaryById(summaryId: string) {
   return fetchData(`${baseUrl}/api/summaries/${summaryId}`);
 }
@@ -1272,7 +1401,7 @@ yarn add react-player
 
 Now, let's create a wrapper component that will use our **React Player** inside `components/custom` folder create a file called `YouTubePlayer.tsx` and paste in the following code.
 
-```jsx
+```tsx
 "use client";
 import ReactPlayer from "react-player/youtube";
 
@@ -1293,7 +1422,7 @@ export default function YouTubePlayer({
   const videoUrl = generateYouTubeUrl(videoId);
 
   return (
-    <div className="relative aspect-w-16 aspect-h-9">
+    <div className="relative aspect-video rounded-md overflow-hidden">
       <ReactPlayer
         url={videoUrl}
         width="100%"
@@ -1308,7 +1437,7 @@ export default function YouTubePlayer({
 
 Now, that we have our react player, let's updated `layout.tsx` file with the following code.
 
-```jsx
+```tsx
 import dynamic from "next/dynamic";
 
 import { extractYouTubeID } from "@/lib/utils";
@@ -1330,10 +1459,10 @@ export default async function SummarySingleRoute({
   if (!data) return <p>No Items Found</p>;
   return (
     <div>
-      <div className="h-full grid gap-4 grid-cols-5 px-6">
+      <div className="h-full grid gap-4 grid-cols-5 p-4">
         <div className="col-span-3">{children}</div>
         <div className="col-span-2">
-          <div className="rounded-lg overflow-hidden">
+          <div>
             <NoSSR videoId={videoId} />
           </div>
         </div>
@@ -1341,7 +1470,6 @@ export default async function SummarySingleRoute({
     </div>
   );
 }
-
 
 ```
 
@@ -1353,8 +1481,7 @@ Now, let's display our summary.
 
 Let's first create a new file called `SummaryCardForm.tsx` we can add it inside of our `src/components/forms` folder and paste in the following code.
 
-```jsx
-
+```tsx
 // import { updateSummaryAction, deleteSummaryAction } from "@/data/actions/summary-actions";
 
 import { Input } from "@/components/ui/input";
@@ -1371,7 +1498,6 @@ import {
 
 import { SubmitButton } from "@/components/custom/SubmitButton";
 import { DeleteButton } from "@/components/custom/DeleteButton";
-
 
 export function SummaryCardForm({
   item,
@@ -1390,7 +1516,14 @@ export function SummaryCardForm({
       <CardContent>
         <div>
           <form>
-          <Input id="title" name="title" placeholder="Update your title" required className="mb-4" defaultValue={item.title}/>
+            <Input
+              id="title"
+              name="title"
+              placeholder="Update your title"
+              required
+              className="mb-4"
+              defaultValue={item.title}
+            />
             <Textarea
               name="summary"
               className="flex w-full rounded-md bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-gray-50 focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mb-4 h-[calc(100vh-245px)] "
@@ -1411,13 +1544,11 @@ export function SummaryCardForm({
     </Card>
   );
 }
-
-
 ```
 
 We are using a new component **DeleteButton** let's created inside of our `components/custom` folder. Create a file called `DeleteButton.tsx` and add the following code.
 
-```jsx
+```tsx
 "use client";
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -1454,13 +1585,13 @@ export function DeleteButton({ className }: Readonly<DeleteButtonProps>) {
 
 Now, let's update our `page.tsx` file with the following code.
 
-```jsx
+```tsx
 import { getSummaryById } from "@/data/loaders";
 import { SummaryCardForm } from "@/components/forms/SummaryCardForm";
 
 interface ParamsProps {
   params: {
-    videoId: string,
+    videoId: string;
   };
 }
 
@@ -1584,14 +1715,19 @@ module.exports = (config, { strapi }) => {
       },
     };
 
-    await strapi.entityService.update(uid, user.id, payload);
+    try {
+      await strapi.entityService.update(uid, user.id, payload);
+    }
+    catch (error) {
+      ctx.badRequest("Error Updating User Credits");
+    }
 
     console.log("############ Inside middleware end #############");
   };
 };
 ```
 
-Explain middlware.
+Explain middleware.
 
 In the code above we deduct one credit, and set the user and summary relation.
 
@@ -1617,77 +1753,30 @@ module.exports = createCoreRouter("api::summary.summary", {
 });
 ```
 
-Now our middleware will fire when we create a new summary. Now, let's update our `frontend` code.
+Now our middleware will fire when we create a new summary. 
 
-Let's navigate to our route handler found in `src/app/api/summarize/route.ts` and make the following changes.
+Now, restart your Strapi backend and Next.js frontend and and create a new summary.
 
-Remove user reference from our Payload interface.
+You will see that we are now setting our user data.
 
-```ts
-interface Payload {
-  data: {
-    videoId: string;
-    summary: string;
-  };
-}
-```
+![](./images/020-setting-user.png)
 
-And remove the user from the payload variable.
-
-```ts
-const payload: Payload = {
-  data: {
-    videoId: videoId,
-    summary: summary,
-  },
-};
-```
-
-Now, restart your Strapi backend and Next.js frontend.
-
-In Strapi Admin let's disable these previously set user permissions.
-
-![](./images/018-disable.png)
-
-Let's test things out, but we will have a small problem. Let's see what it is.
-
-![](./images/019-not-updating.gif)
-
-Notice that I need to do a hard refresh to reload the page in order to update the credit count.
-
-We will just update our `getUserMeLoader` not to cache the data any of the user data.
-
-```jsx
-export async function getUserMeLoader() {
-  const baseUrl = getStrapiURL();
-
-  const url = new URL("/api/users/me", baseUrl);
-  url.search = query;
-
-  const authToken = await getAuthToken();
-  if (!authToken) return { ok: false, data: null, error: null };
-
-  try {
-    const response = await fetch(url.href, {
-      cache: "no-store", // <-- this will opt out from caching our user data
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
-    const data = await response.json();
-    if (data.error) return { ok: false, data: null, error: data.error };
-    return { ok: true, data: data, error: null };
-  } catch (error) {
-    console.log(error);
-    return { ok: false, data: null, error: error };
-  }
-}
-```
-
-Restart your Next app and let's try again.
-
-Now things should work as expected. If we were using server actions we could of used `revalidatePath` you can read more about it [here](). In our case not caching user data make more sense.
 
 ## Conclusion
+
+
+In this part 6 of our Next.js 14 tutorial series, we tackled generating video summaries using Open AI and LangChain, a highlight feature for our Next.js app. 
+
+We started by building a SummaryForm component to handle user submissions and explored Next.js API routes for server-side logic.
+
+We then leveraged OpenAI for summarizing video transcripts, demonstrating the practical use of AI in web development. 
+
+In the next post we will take a look at at our summary details page and cover update and deleting posts. 
+
+As well as how to add policies to make sure that our user can only modify their own content.
+
+Hope you are enjoying this series as much as I am making it.
+
+If you have any questions or have found "bugs" let us know so we can continue to improve our content.
+
+
