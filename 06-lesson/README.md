@@ -1,6 +1,6 @@
 # Epic Next JS 14 TutorialPart 6: Create Video Summary with Next.js, LangChain, and Open AI.
 
-In the previous tutorial, we completed our **Dashboard** and **Account** pages, in this section we will work on generating our video summary using Open AI and LangChain.
+In the previous tutorial, we completed our **Dashboard** and **Account** pages. In this section, we will work on generating our video summary using Open AI and LangChain.
 
 - Getting Started with the Project
 - Building Out The Hero Section
@@ -14,11 +14,11 @@ In the previous tutorial, we completed our **Dashboard** and **Account** pages, 
 
 ![001-summary-form](./images/001-summary-form.png)
 
-We are going to kick of the tutorial by starting to work on our **SummaryForm** component. This time around, instead of using a `server action` we will explore how to create and **api** route in Next.js.
+We will kick off the tutorial by working on our SummaryForm component. This time around, instead of using a `server action,` we will explore how to create an api route in Next.js.
 
 You can learn more about Next.js route handlers [here](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
 
-But first, let's start by creating our **Summary Form** that we can use to submit the request.
+But first, let's create our Summary Form, which we can use to submit the request.
 
 Navigate to `src/components/forms` and create a new file called `SummaryForm.tsx` and paste in the following code as the starting point.
 
@@ -95,17 +95,17 @@ export function SummaryForm() {
 }
 ```
 
-The above code contains a basic form UI, and a `handleFormSubmit` function which does not include any of our logic to get the summary yet.
+The above code contains a basic form UI and a `handleFormSubmit` function, which does not include any of our logic to get the summary yet.
 
-We are also using **Sonner** one of my favorite toast libraries. You can learn more about it [here](https://sonner.emilkowal.ski/).
+We also use **Sonner**, one of my favorite toast libraries. You can learn more about it [here](https://sonner.emilkowal.ski/).
 
-But we are not using it directly, and instead using the **Chadcn UI** component that you can find [here](https://ui.shadcn.com/docs/components/sonner).
+But we are not using it directly; instead, we are using the **Chadcn UI** component, which you can find [here](https://ui.shadcn.com/docs/components/sonner).
 
 ```bash
 npx shadcn-ui@latest add sonner
 ```
 
-Once **Sonner** is installed, let's implemented in our main `layout.tsx` file by adding the following import.
+Once **Sonner** is installed, implement it in our main `layout.tsx` file by adding the following import.
 
 ```tsx
 import { Toaster } from "@/components/ui/sonner";
@@ -122,7 +122,7 @@ And adding the code below above our `TopNav`.
 </body>
 ```
 
-Now, let's add this form to our top navigation by navigating to `src/components/custom/Header.tsx` file and making the following changes.
+Let's add this form to our top navigation by navigating to the `src/components/custom/Header.tsx` file and making the following changes.
 
 ```tsx
 // import the form
@@ -151,17 +151,17 @@ export async function Header({ data }: Readonly<HeaderProps>) {
 }
 ```
 
-Now let's restart our frontend project and see if it is showing up.
+Let's restart our frontend project and see if it shows up.
 
-![](./images/002-toast-and-form.gif)
+![002-toast-and-form](./images/002-toast-and-form.gif)
 
-Now that we have our basic form working. Let's take a look how we can set up our first API Handler Route in Next.js
+Now that our basic form is working let's examine how to set up our first API Handler Route in Next.js.
 
 ## How To Create A Route Handler in Next.js
 
-We will have the Next.js [docs](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) open as reference.
+We will have the Next.js [docs](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) open as a reference.
 
-Let's start by creating a new folder inside our `app` directory called `api` with a folder called `summarize` with a file called `route.ts` and paste in the following code.
+Let's start by creating a new folder inside our `app` directory called `api`, a folder called `summarize`, and a file called `route.ts`. Then, paste in the following code.
 
 ```ts
 import { NextRequest } from "next/server";
@@ -184,7 +184,9 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Next let's create a service to call our new route handler. Navigate to `src/data/services` and create a new file called `summary-service.ts` and inside create a new service called `generateSummaryService.ts` and add the following code.
+Next, let's create a service to call our new route handler. Navigate to `src/data/services` and create a new file called `summary-service.ts`.
+
+Create a new service called `generateSummaryService.ts` and add the following code.
 
 ```ts
 export async function generateSummaryService(videoId: string) {
@@ -203,11 +205,11 @@ export async function generateSummaryService(videoId: string) {
 }
 ```
 
-The following service allow us to call our newly created route handler located at `api/summarize` endpoint. It expects us to pass a `videoId` for the video that we would like to summarize.
+The following service allows us to call our newly created route handler located at `api/summarize` endpoint. It expects us to pass a `videoId` for the video we want to summarize.
 
-Now that we have our basic route handler, let's go back to our `SummaryForm.tsx` file and see if we can make a request to this endpoint.
+Now that we have our basic route handler let's return to our `SummaryForm.tsx` file and see if we can request this endpoint.
 
-Now, let's modify our `handleFormSubmit` to use our newly created service with the following code. Don't forget to import the `generateSummaryService` service.
+Let's modify our `handleFormSubmit` with the following code to use our newly created service. Don't forget to import the `generateSummaryService` service.
 
 ```tsx
 import { generateSummaryService } from "@/data/services/summary-service";
@@ -231,35 +233,37 @@ async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
 }
 ```
 
-Now when you submit your form, inside our console log you should see the message being returned from our route handler.
+When you submit your form, you should see the message returned from our route handler in our console log.
 
 ![003-route-response](./images/003-route-response.gif)
 
-Now that we know that our **Summary Form** and our **Route Handler** are connected we can move on to work on the logic responsible that will summarize our video.
+Now that we know that our **Summary Form** and **Route Handler** are connected, we can work on the logic responsible for summarizing our video.
 
 ## Using Next.js Route Handler LangChain and Open AI To Create A Summary.
 
-In this section we will take a look on how to create a video summary based on the video transcript.
+This section will examine how to create a video summary based on the video transcript.
 
-We will be using couple of service to help us accomplish this.
+We will be using a couple of services to help us accomplish this.
 
-Prerequesit: you will need to have an account with **Open AI** if you don't have one, go [here](https://platform.openai.com/docs/introduction) and create one.
+Prerequisite: You must have an account with Open AI. If you don't have one, go [here](https://platform.openai.com/docs/introduction) and create one.
 
 ### Getting Transcript From YouTube
 
-In the past, I have use ['youtube-transcript']() library, interestingly just recently it broke. You can read through the issues [here](https://github.com/Kakulukian/youtube-transcript/issues/19#issuecomment-2041204365).
+In the past, I have used the ['youtube-transcript'](https://www.npmjs.com/package/youtube-transcript) library; interestingly, it broke just recently.
 
-Luckily the amazing community created a work around, so that is what we are going to use in our code.
+You can read through the issues [here](https://github.com/Kakulukian/youtube-transcript/issues/19#issuecomment-2041204365).
 
-For all who are reading this in the future, the fix might of been merged so you would be able to update your code and use the `youtube-transcript` package directly.
+Luckily, the fantastic community created a workaround, which we will use in our code.
 
-Just a quick note: when using other libraries especially ones that are not officially supported, it can lead to breaking changes, something to keep in mind.
+The fix might have been merged for all who read this in the future, so you could update your code and use the `youtube-transcript` package directly.
 
-So if you need a service to be guaranteed it may be valuable to create your own implementation.
+A quick note: Using other libraries, especially ones not officially supported, can lead to breaking changes, so keep this in mind.
 
-I started building a plugin in Strapi to create transcripts using OpenAi whisper service once it is done, I will create a blog post around it.
+So, if you need a service to be guaranteed, it may be valuable to create your own implementation.
 
-But for this video we will just go with the following, start by navigating to `src/lib` and create a file name `youtube-transcript.ts` and paste in the following code.
+I started building a plugin in Strapi to create transcripts using the OpenAi whisper service. Once it is done, I will make a blog post around it.
+
+But for this video, we will follow the following steps: navigate to `src/lib`, create a file named `youtube-transcript.ts`, and paste it into the following code.
 
 ```ts
 import { parse } from "node-html-parser";
@@ -406,7 +410,7 @@ Navigate to `src/app/api/summarize/route.ts` and let's import our `fetchTranscri
 
 We will also create a wrapper function that will call this service. Here is what it will look like.
 
-Import `fetchTranscript` function we just added.
+Import the `fetchTranscript` function we just added.
 
 ```ts
 import { fetchTranscript } from "@/lib/youtube-transcript";
@@ -486,7 +490,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Now, let's test our frontend.
+Now, let's test our front end.
 
 ![](./images/004-test-transcript.gif)
 
@@ -513,7 +517,7 @@ Transcript: [
 ];
 ```
 
-Nice, we are getting our transcript, but it is an array which also includes time code. But we just want the text. Let's create a utility function to do this conversion for us.
+Nice. We are getting our transcript, but it is an array that includes the time code. We want the text. Let's create a utility function to do this conversion for us.
 
 Let's add this function to the top of our code in our route handler.
 
@@ -532,7 +536,7 @@ function transformData(data: any[]) {
 }
 ```
 
-Now let's use it.
+Now, let's use it.
 
 ```ts
 const transformedData = transformData(transcript);
@@ -605,25 +609,25 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Let's test it out. We should not see a response containing just out text.
+Let's test it out. We should now see a response containing just our text.
 
 ```bash
-  text: 'In the last chapter, you and I started to step  through the internal workings of a transformer. This is one of the key pieces of technology inside large language models,  and a lot of other tools in the modern wave of AI. It first hit the scene in a now-famous 2017 paper called Attention is All You Need,  and in this chapter you and I will dig '... 18362 more characters
+  text: 'In the last chapter, you and I started to step through the internal workings of a transformer. This is one of the key pieces of technology inside large language models,  and a lot of other tools in the modern wave of AI. It first hit the scene in a now-famous 2017 paper called Attention is All You Need,  and in this chapter you and I will dig '... 18362 more characters
 ```
 
-Nice, now that we have our transcript, we can use it to get our summary.
+Excellent. Now that we have our transcript, we can use it to prepare our summary.
 
-But first let's add some basic validation.
+But first, let's add some basic validation.
 
-Let's do a check in our form to make sure we are providing a proper video Id or video Url.
+Let's check our form to ensure we provide a proper video ID or URL.
 
-Then we will check if out user is logged in and has credits.
+Then, we will check if our user is logged in and has credits.
 
 ### Form Validation and Submission
 
-First, let's add a util function to extract a valid videoId from our YouTube url. We will use to validate YouTube video id and ulr.
+First, let's add a util function to extract a valid videoId from our YouTube url. We will use it to validate the YouTube video ID and our.
 
-And the following inside of our `utils.ts` file.
+And the following is inside our `utils.ts` file.
 
 ```ts
 export function extractYouTubeID(urlOrID: string): string | null {
@@ -658,13 +662,13 @@ export function extractYouTubeID(urlOrID: string): string | null {
 }
 ```
 
-Let's navigate to our `SummaryForm.tsx` file import our `extractYouTubeID`
+Let's navigate to our `SummaryForm.tsx` file and import our `extractYouTubeID`.
 
 ```tsx
 import { extractYouTubeID } from "@/lib/utils";
 ```
 
-And update it with the following changes inside of our `handleFormSubmit` function.
+And update it with the following changes inside our `handleFormSubmit` function.
 
 ```tsx
 async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -699,22 +703,22 @@ async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
 }
 ```
 
-Let's test our the front end.
+Let's test our front end.
 
 ![](./images/005-test-error.gif)
 
-Nice we are able to check if we have proper Url or ID.
+Nice, we can check if we have the proper Url or ID.
 
-Now let's navigate to our route handler at `src/app/api/summarize/route.ts` and add a check to check if user is logged in and has available credits.
+Now, let's navigate to our route handler at `src/app/api/summarize/route.ts` and add a check to check if a user is logged in and has available credits.
 
-First import the following helper methods.
+First, import the following helper methods.
 
 ```ts
 import { getUserMeLoader } from "@/data/services/get-user-me-loader";
 import { getAuthToken } from "@/data/services/get-token";
 ```
 
-And the following lines inside the `POST` function.
+And the following lines are inside the `POST` function.
 
 ```ts
 export async function POST(req: NextRequest) {
@@ -827,7 +831,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Now we have to add a check in our `SummaryForm.tsx` file to handle the errors inside of our `handleFormSubmit` function.
+We must add a check in our `SummaryForm.tsx` file to handle the errors inside our `handleFormSubmit` function.
 
 Let's add the following code after this line.
 
@@ -899,29 +903,29 @@ async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
 }
 ```
 
-Now let's test our form.
+Now, let's test our form.
 
 ![006-testing-credits](./images/006-testing-credits.gif)
 
-Nice, it is working. Now we are ready to implement our logic to get our summary. Let's do it.
+Excellent, it is working. Now, we are ready to implement our logic to get our summary. Let's do it.
 
 ### Generate Summary with LangChain and OpenAI in Next.js
 
-Now let's write our logic to handle our summary generation with OpenAi and LangChain.
+Now, let's write our logic to handle the generation of our summary with OpenAi and LangChain.
 
-If you never used LangChain before, it is a tool that helps your to simplify building AI powered apps. You can learn about it [here](https://js.langchain.com/docs/get_started/introduction).
+If you never used LangChain before, it is a tool that helps you simplify building AI-powered apps. You can learn about it [here](https://js.langchain.com/docs/get_started/introduction).
 
 ![007-langchain](./images/007-langchain.png)
 
-Before getting started, let's install the following packages `@langchain/openai` and `langchain` with the following command.
+Before starting, install the following packages `@langchain/openai` and `langchain` with the following command.
 
 ```bash
 yarn add @langchain/openai langchain
 ```
 
-Nice, now let's make the following changes in our route handler, navigate to `src/app/api/summarize/route.ts` and let's make the following changes.
+Nice. Now, let's make the following changes in our route handler: Navigate to `src/app/api/summarize/route.ts` and make the following changes.
 
-Fist let's import all the required dependencies.
+First, let's import all the required dependencies.
 
 ```ts
 import { ChatOpenAI } from "@langchain/openai";
@@ -929,7 +933,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 ```
 
-Next let's create a function called `generateSummary` with the following code.
+Next, create a function called `generateSummary` with the following code.
 
 ```ts
 async function generateSummary(content: string, template: string) {
@@ -962,7 +966,7 @@ async function generateSummary(content: string, template: string) {
 }
 ```
 
-Now let's create a prompt template.
+Now, let's create a prompt template.
 
 ```ts
 const TEMPLATE = `
@@ -971,7 +975,7 @@ INSTRUCTIONS:
   Generate the title for based on the content provided
   Summarize the following content and include 5 key topics, writing in first person using normal tone of voice.
   
-  Write youtube video description
+  Write a youtube video description
     - Include heading and sections.  
     - Incorporate keywords and key takeaways
 
@@ -981,7 +985,9 @@ INSTRUCTIONS:
 `;
 ```
 
-Now, let's use `generateSummary` function inside of our `POST` function. Update the code with the following.
+You can change the template accordingly to suit your needs.
+
+Let's use the `generateSummary` function inside our `POST` function. Update the code with the following.
 
 The updated `POST` function should look like the following.
 
@@ -1037,13 +1043,13 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-In the code above we implemented our `generateSummary` function. Which will be in charge of generating our summary and sending it back you our form where we will create a server action to be responsible for saving our data into our Strapi backend.
+In the code above, we implemented our `generateSummary` function, which will generate our summary and send it back to you via our form. We will also create a server action responsible for saving our data into our Strapi backend.
 
-But first let's console.log the output to see if we are getting back our summary.
+But first, let's console.log the output to see if we are getting back our summary.
 
-First create a `.env.local` file and add our Open AI API key.
+First, create a `.env.local` file and add our Open AI API key.
 
-**WARNING**: Make sure your `.gitignore` file is ignoring `.env*.local` file from your commit, so you don't leak your Open AI key.
+**WARNING**: Ensure your `.gitignore` file ignores the `.env*.local` file from your commit so you don't leak your Open AI key.
 
 ```
 # local env files
@@ -1054,9 +1060,9 @@ First create a `.env.local` file and add our Open AI API key.
 OPENAI_API_KEY=ADD_YOUR_KEY_HERE
 ```
 
-Now let's test out our form and see if we are able to get our summary. Make sure to add some credits to your user.
+Let's test our form and see if we can get our summary. Make sure to add some credits to your user.
 
-Nice, we are able to see our output in the console.
+Excellent. We can see our output on the console.
 
 ```markdown
 **Title:** Quickstart Guide to Launching Your Project with Strapi in Just 3 Minutes
@@ -1066,21 +1072,21 @@ Nice, we are able to see our output in the console.
 **Heading:** Fast Track Your Development with Strapi: A 3-Minute Quickstart Guide
 
 **Introduction:**
-Join me today as we dive into how to get your project up and running with Strapi in just three minutes! Strapi is an open-source headless CMS that simplifies the process of building, managing, and deploying your content. Whether you're a developer, content creator, or project manager, this guide is designed to help you kickstart your project effortlessly.
+Join me today as we explore how to get your project up and running with Strapi in just three minutes! Strapi is an open-source headless CMS that simplifies the process of building, managing, and deploying content. Whether you're a developer, content creator, or project manager, this guide is designed to help you kickstart your project effortlessly.
 
 **Sections:**
 
 - **Setting Up Your Strapi Project:**
   - Learn how to create a new Strapi project using the quickstart command to leverage default configurations, including setting up an SQLite database.
 
-rest of summary...
+Rest of summary...
 ```
 
 Now that we know we are getting our summary, the last step is to save it to Strapi and deduct 1 credit.
 
 ### Saving Our Summary To Strapi
 
-Let's first start by creating a new `collection-type` in Strapi admin to save our summary.
+First, create a new `collection-type` in Strapi admin to save our summary.
 
 Navigate to the content builder page and create a new collection named `Summary` with the following fields.
 
@@ -1095,7 +1101,7 @@ Let's add the following fields.
 | summary | Rich Text | Markdown    |
 | user    | Relation  | One to many |
 
-When creating user relation make sure you select appropriate relation.
+When creating user relations, make sure you select the appropriate relation.
 
 ![](./images/009-user-relation.png)
 
@@ -1103,13 +1109,13 @@ Here is what the final fields will look like.
 
 ![](./images/010-summary-fields.png)
 
-And now navigate to `Setting` and add the following permissions.
+Now, navigate to `Setting` and add the following permissions.
 
 ![](./images/011-set-permissions.png)
 
-Now, that we have our **Summary** `collection-type`, let's create a server action to handle saving our data to Strapi.
+Now that we have our **Summary** `collection-type`, let's create a server action to save our data to Strapi.
 
-Let's start by navigating to `srs/data/actions` and creating a new file called `summary-actions.ts` and adding the following code.
+Let's start by navigating to `srs/data/actions`, creating a new file called `summary-actions.ts`, and adding the following code.
 
 ```ts
 "use server";
@@ -1137,9 +1143,9 @@ export async function createSummaryAction(payload: Payload) {
 }
 ```
 
-Now that we have our `createSummaryAction` let's use it in our `handleFormSubmit` found in our form named `SummaryForm`.
+Now that we have our `createSummaryAction`, let's use it in our `handleFormSubmit,` found in our form named `SummaryForm`.
 
-First let's import our newly created action.
+First, let's import our newly created action.
 
 ```tsx
 import { createSummaryAction } from "@/data/actions/summary-actions";
@@ -1215,7 +1221,7 @@ async function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
 
 The above code will be responsible for saving our data into Strapi.
 
-Let's do a quick test and see if it works. We should be redirected to our `summaries` route that we are yet to create so we will get our not found page. This is ok and we will fix soon.
+Let's do a quick test and see if it works. We should be redirected to our `summaries` route, which we have yet to create, so we will get our not found page. This is okay, and we will fix it soon.
 
 ![](./images/013-redirect.gif)
 
@@ -1223,11 +1229,11 @@ But you should see your data in your Strapi Admin.
 
 ![](./images/013-1-response.png)
 
-You will notice that we are not setting our user, nor are we deduction one credit on creation. This is something we will do in Strapi by creating a custom middleware. But first let's finish all of our Next.js UI.
+You will notice that we are not setting our user or deducting one credit on creation. We will do this in Strapi by creating custom middleware. But first, let's finish all of our Next.js UI.
 
 ## Create Summary Page Card View
 
-Let's navigate to our `dashboard` folder and inside create another folder named `summaries` with a fille named `page.tsx` and paste in the following code.
+Let's navigate to our `dashboard` folder. Inside, create another folder named `summaries` with a `page.tsx` file and paste it into the following code.
 
 ```tsx
 import Link from "next/link";
@@ -1275,7 +1281,7 @@ export default async function SummariesRoute() {
 }
 ```
 
-Before this component will work we need to create `getSummaries` function to load our data.
+Before this component works, we must create the `getSummaries` function to load our data.
 
 Let's navigate to our `loaders.ts` file and make the following changes.
 
@@ -1285,7 +1291,7 @@ First, import the following method to give us access to our auth token for autho
 import { getAuthToken } from "./services/get-token";
 ```
 
-Next update `fetchData` function with the following code.
+Next, update the `fetchData` function with the following code.
 
 ```ts
 async function fetchData(url: string) {
@@ -1310,7 +1316,7 @@ async function fetchData(url: string) {
 }
 ```
 
-Now let's add this code at end of the file to get our summaries.
+Now, let's add this code at the end of the file to get our summaries.
 
 ```ts
 export async function getSummaries() {
@@ -1319,24 +1325,25 @@ export async function getSummaries() {
 }
 ```
 
-Now, we need to update the following permissions in Strapi dashboard.
+Now, we need to update the following permissions in the Strapi dashboard.
 
-![](./images/014-permissions.gif) 
+![](./images/014-permissions.gif)
 
-Under `Settings` => `User Permissions` => `Roles` => `Authenticated` and set **Global** and **Home-page** checkbox to `checked`.
+Under `Settings` => `User Permissions` => `Roles` => `Authenticated`, set the **Global** and **Home-page** checkboxes to `checked`.
 
-Restart your application and you should now be able to see the list view.
+Restart your application, and you should now be able to view the list.
 
 ![](./images/014-1-list.png)
 
 Now, let's create the Single Card view.
 
-1. inside summaries create a new folder called `[videoId]`
+First, we will create a dynamic route; you can learn more about dynamic routes in Next.js docs [here](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes).
 
-explain dynamic routes here
+"Dynamic Routes are pages that allow you to add custom params to your URLs."
 
+Create a new folder called `[videoId]` inside the' summaries' folder.
 
-2. create a `layout.tsx` file with the following code.
+Inside our newly created dynamic route, create a file named `layout.tsx` with the following code.
 
 ```tsx
 import { extractYouTubeID } from "@/lib/utils";
@@ -1363,7 +1370,7 @@ export default async function SummarySingleRoute({
 }
 ```
 
-3. Create `page.tsx` file with the following.
+Create another file called `page.tsx` file with the following.
 
 ```tsx
 interface ParamsProps {
@@ -1379,11 +1386,11 @@ export default async function SummaryCardRoute({
 }
 ```
 
-Now that we know that our pages work let's create the loaders to get the appropriate data.
+Now that we know our pages work, let's create the loaders to get the appropriate data.
 
 ### Fetching And Displaying Our Single Video and Summary
 
-Let's start by navigating to our `loaders.ts` file and add the following functions.
+Let's start by navigating our `loaders.ts` file and adding the following functions.
 
 ```tsx
 export async function getSummaryById(summaryId: string) {
@@ -1391,7 +1398,7 @@ export async function getSummaryById(summaryId: string) {
 }
 ```
 
-Now, before we use our `getSummaryById` function let's install our our video player. We are going to use **React Player** that you can find [here](https://www.npmjs.com/package/react-player).
+Now, before using our `getSummaryById` function, let's install our video player. We will use **React Player** that you can find [here](https://www.npmjs.com/package/react-player).
 
 Let's start by installing it with the following command.
 
@@ -1399,7 +1406,7 @@ Let's start by installing it with the following command.
 yarn add react-player
 ```
 
-Now, let's create a wrapper component that will use our **React Player** inside `components/custom` folder create a file called `YouTubePlayer.tsx` and paste in the following code.
+Let's create a wrapper component using our **React Player** inside the `components/custom` folder. Create a `YouTubePlayer.tsx` file and paste it into the following code.
 
 ```tsx
 "use client";
@@ -1435,7 +1442,7 @@ export default function YouTubePlayer({
 }
 ```
 
-Now, that we have our react player, let's updated `layout.tsx` file with the following code.
+Now that we have our react player let's update the `layout.tsx` file using the following code.
 
 ```tsx
 import dynamic from "next/dynamic";
@@ -1470,16 +1477,17 @@ export default async function SummarySingleRoute({
     </div>
   );
 }
-
 ```
 
-In the code above we are using `dynamic` to disable ssr which helps to avoid issues when using certain client side components. You can read more here.
+In the code above, we use `dynamic` to disable SSR, which helps avoid issues when using some client-side components. In this blog post, you can read more [here](https://dev.to/kawanedres/leveraging-nextjs-dynamic-imports-to-solve-hydration-problems-5086).
+
+Next.js docs reference on solving hydration issues [here](https://nextjs.org/docs/messages/react-hydration-error#solution-2-disabling-ssr-on-specific-components)
 
 ![](./images/015-video.png)
 
 Now, let's display our summary.
 
-Let's first create a new file called `SummaryCardForm.tsx` we can add it inside of our `src/components/forms` folder and paste in the following code.
+Let's first create a new file called `SummaryCardForm.tsx`. We can add it to our `src/components/forms` folder and paste it into the following code.
 
 ```tsx
 // import { updateSummaryAction, deleteSummaryAction } from "@/data/actions/summary-actions";
@@ -1546,7 +1554,7 @@ export function SummaryCardForm({
 }
 ```
 
-We are using a new component **DeleteButton** let's created inside of our `components/custom` folder. Create a file called `DeleteButton.tsx` and add the following code.
+We are using a new component, **DeleteButton**. Let's create it inside our `components/custom` folder. Create a `DeleteButton.tsx` file and add the following code.
 
 ```tsx
 "use client";
@@ -1583,7 +1591,7 @@ export function DeleteButton({ className }: Readonly<DeleteButtonProps>) {
 }
 ```
 
-Now, let's update our `page.tsx` file with the following code.
+Let's update our `page.tsx` file with the following code.
 
 ```tsx
 import { getSummaryById } from "@/data/loaders";
@@ -1608,29 +1616,37 @@ export default async function SummaryCardRoute({
 
 ![](./images/017-generating-summary.gif)
 
-Now, that our we know our front end works. Let's revisit our route handler.
+Now that we know our front end works. Let's revisit our route handler.
 
-## Using Strapi Route Middleware To Make Our App More Secure
+## Using Strapi Route Middleware To Set User/Summary Relation
 
-We are currently relying on our front end to set the user when creating our Summary, in order for this functionality to work we had to allow user permissions to find the user in order to set the relationship.
+When creating our summary, we will set the summary/user relation on the backend, where we can confirm the logged-in user creating the content.
 
-Which is not great, because that means any user can find info for any other user, so what we can do is disable the find functionality, and create a middleware that will set the user on Strapi backend.
+This will prevent anyone from the front end from passing a user ID that is not their own.
 
-We are also not handling user credit update, let's do that in the middleware.
+We are also not handling user credit updates; let's do that in the middleware.
 
-Let's fix this by creating a strapi Middleware that will handle setting the correct user and deducting a credit.
+**What is a route middleware**
 
-You can learn more about route middlewares here.
+In Strapi, a route middleware is a type of middleware that has a more limited scope compared to global middlewares.
+
+They control the request flow and can change the request itself before moving forward.
+
+They can also be used to control access to a route and perform additional logic.
+
+For example, they can be used instead of policies to control access to an endpoint. They could modify the context before passing it down to further core elements of the Strapi server.
+
+You can learn more about route middlewares [here](https://docs.strapi.io/dev-docs/backend-customization/middlewares).
 
 Let's first start by creating our route middleware.
 
-We can use our cli command. In your `backend` folder run the following command.
+We can use our cli command. In your `backend` folder, run the following command.
 
 ```bash
 yarn strapi generate
 ```
 
-Chose generate middleware option.
+Choose to generate a middleware option.
 
 ```bash
 
@@ -1668,7 +1684,7 @@ Let's call it `on-summary-create` and add it to an existing API. Which will be `
 
 ```
 
-Now let's take a look in the following folder `backend/src/api/summary/middlewares` you should see the following file `on-summary-create` with the following boiler plate.
+Now, let's take a look in the following folder: `backend/src/api/summary/middlewares.` You should see the following file: `on-summary-create` with the following boilerplate.
 
 ```js
 "use strict";
@@ -1717,8 +1733,7 @@ module.exports = (config, { strapi }) => {
 
     try {
       await strapi.entityService.update(uid, user.id, payload);
-    }
-    catch (error) {
+    } catch (error) {
       ctx.badRequest("Error Updating User Credits");
     }
 
@@ -1727,13 +1742,13 @@ module.exports = (config, { strapi }) => {
 };
 ```
 
-Explain middleware.
+In the code above, we deduct one credit and set the user and summary relation.
 
-In the code above we deduct one credit, and set the user and summary relation.
+Before testing it out, we have to enable it inside our route.
 
-Before we can test it out we have to enable it inside of our route.
+You can learn more about Strapi's routes [here](https://docs.strapi.io/dev-docs/backend-customization/routes).
 
-Navigate to `backend/src/api/summary/routes/summary.js` file and update with the following.
+Navigate to the `backend/src/api/summary/routes/summary.js` file and update with the following.
 
 ```js
 "use strict";
@@ -1753,30 +1768,26 @@ module.exports = createCoreRouter("api::summary.summary", {
 });
 ```
 
-Now our middleware will fire when we create a new summary. 
+Now, our middleware will fire when we create a new summary.
 
-Now, restart your Strapi backend and Next.js frontend and and create a new summary.
+Now, restart your Strapi backend and Next.js frontend and create a new summary.
 
 You will see that we are now setting our user data.
 
 ![](./images/020-setting-user.png)
 
-
 ## Conclusion
 
+In part 6 of our Next.js 14 tutorial series, we tackled generating video summaries using Open AI and LangChain, a highlight feature for our Next.js app.
 
-In this part 6 of our Next.js 14 tutorial series, we tackled generating video summaries using Open AI and LangChain, a highlight feature for our Next.js app. 
+We built a SummaryForm component to handle user submissions and explored Next.js API routes for server-side logic.
 
-We started by building a SummaryForm component to handle user submissions and explored Next.js API routes for server-side logic.
+We then leveraged OpenAI to summarize video transcripts, demonstrating the practical use of AI in web development.
 
-We then leveraged OpenAI for summarizing video transcripts, demonstrating the practical use of AI in web development. 
+In the next post, we will examine our summary details page and discuss updating and deleting posts.
 
-In the next post we will take a look at at our summary details page and cover update and deleting posts. 
-
-As well as how to add policies to make sure that our user can only modify their own content.
+As well as how to add policies to ensure that our user can only modify their content.
 
 Hope you are enjoying this series as much as I am making it.
 
-If you have any questions or have found "bugs" let us know so we can continue to improve our content.
-
-
+If you have any questions or have found "bugs," let us know so we can continue to improve our content.
