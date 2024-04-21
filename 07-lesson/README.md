@@ -830,10 +830,7 @@ module.exports = (config, { strapi }) => {
       return ctx.badRequest("You are not authenticated.");
     }
 
-    ctx.query = {
-      ...ctx.query,
-      filters: { ...ctx.query.filters, id: currentUserId },
-    };
+    ctx.query.filters.id = currentUserId;
 
     await next();
   };
@@ -880,6 +877,7 @@ We will add the following code with our logic.
 
 ```js
 "use strict";
+const _ = require("lodash");
 
 /**
  * `user-can-update` middleware
@@ -890,7 +888,7 @@ module.exports = (config, { strapi }) => {
   return async (ctx, next) => {
     strapi.log.info("In user-can-update middleware.");
 
-    console.log("ctx.state", ctx.state);
+    console.log("ctx", ctx.req.body);
 
     // use lodash pick
 
@@ -902,6 +900,8 @@ module.exports = (config, { strapi }) => {
     const params = ctx.params;
     const currentUserId = ctx.state?.user?.id;
     const requestedUserId = params?.id;
+
+    console.log("params", ctx);
 
     console.log("currentUserId", Number(currentUserId));
     console.log("requestedUserId", Number(requestedUserId));
@@ -915,10 +915,21 @@ module.exports = (config, { strapi }) => {
       return ctx.unauthorized("You are not authorized to perform this action.");
     }
 
+    ctx.request.body = _.pick(ctx.request.body, [
+      "firstName",
+      "lastName",
+      "bio",
+      "image",
+    ]);
+
     await next();
   };
 };
 ```
+
+In the code above we are checking if userId and requested user Id match than we will continue, otherwise we will return the unauthorized message.
+
+We are also using `lodash` to modify the body to only allow the user to change `firstName`, `lastName`, `bio`, and `image`.
 
 Finally, let's reference this new middleware inside our register function, which is found in the src/index.js file.
 
